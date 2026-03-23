@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "366298944322",
+    "project_id": "gamelog-8e4da",
+    "storage_bucket": "gamelog-8e4da.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:366298944322:android:05e2b2f1d2ae2de2de2edb",
+        "android_client_info": {
+          "package_name": "com.example.gamelog"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "366298944322-ieuicnq5ke394147p9vcc7frqlvlkrqb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gamelog",
+            "certificate_hash": "d1de59ce3abd175c3663b4d027cfe7734e34c57e"
+          }
+        },
+        {
+          "client_id": "366298944322-6m7t6k093ln2mlevlbs4hb67vt0o3jaf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwuHugmn5mYoyD9s9puLgpQSG2srmfo-M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "366298944322-6m7t6k093ln2mlevlbs4hb67vt0o3jaf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

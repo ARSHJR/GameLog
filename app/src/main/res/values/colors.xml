@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="app_background">#0D1B2A</color>
+    <color name="card_background">#1B263B</color>
+    <color name="button_background">#4169E1</color>
+    <color name="text_primary">#E0E1DD</color>
+    <color name="text_secondary">#778DA9</color>
+    <color name="splash_background">#4169E1</color>
+</resources>
