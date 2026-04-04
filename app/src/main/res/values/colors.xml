@@ -1,9 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="app_background">#0D1B2A</color>
-    <color name="card_background">#1B263B</color>
-    <color name="button_background">#4169E1</color>
-    <color name="text_primary">#E0E1DD</color>
-    <color name="text_secondary">#778DA9</color>
-    <color name="splash_background">#4169E1</color>
+    <!-- Dark Gaming Theme Palette -->
+    <color name="bg_primary">#050A10</color>           <!-- Very dark navy/near-black -->
+    <color name="bg_secondary">#0E1621</color>         <!-- Slightly lighter surface -->
+    <color name="surface_card">#162130</color>         <!-- Card surface color -->
+
+    <color name="accent_neon">#4D7CFF</color>          <!-- Electric blue accent -->
+    <color name="accent_glow">#204D7CFF</color>        <!-- Translucent blue for glow -->
+    <color name="accent_violet">#8A2BE2</color>        <!-- Violet accent -->
+    <color name="accent_cyan">#00E5FF</color>          <!-- Cyan secondary accent -->
+
+    <color name="text_high_emp">#F0F2F5</color>        <!-- Off-white primary text -->
+    <color name="text_med_emp">#94A3B8</color>         <!-- Muted grey-blue secondary text -->
+    <color name="text_disabled">#475569</color>        <!-- Muted text -->
+
+    <color name="status_success">#10B981</color>       <!-- Subtle green for success -->
+    <color name="status_error">#EF4444</color>         <!-- Subtle red for error -->
+
+    <!-- Legacy Color Mappings (keeping names to avoid breaking layout inflation) -->
+    <color name="app_background">#050A10</color>
+    <color name="card_background">#162130</color>
+    <color name="button_background">#4D7CFF</color>
+    <color name="text_primary">#F0F2F5</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="splash_background">#050A10</color>
 </resources>
