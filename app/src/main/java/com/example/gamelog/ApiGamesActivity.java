@@ -29,6 +29,7 @@ public class ApiGamesActivity extends AppCompatActivity {
     private View errorContainer;
     private TextView errorText;
     private Button retryButton;
+    private long screenStartMs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,5 +112,27 @@ public class ApiGamesActivity extends AppCompatActivity {
         recyclerView.setVisibility(View.GONE);
         errorContainer.setVisibility(View.VISIBLE);
         errorText.setText(message);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        screenStartMs = System.currentTimeMillis();
+    }
+
+    @Override
+    protected void onStop() {
+        if (screenStartMs > 0) {
+            UserActivityLogger.logDuration(
+                    this,
+                    "screen_view",
+                    "screen",
+                    "explore",
+                    "Explore games",
+                    System.currentTimeMillis() - screenStartMs
+            );
+            screenStartMs = 0;
+        }
+        super.onStop();
     }
 }

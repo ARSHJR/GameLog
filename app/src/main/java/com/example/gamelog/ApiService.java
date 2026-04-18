@@ -54,6 +54,12 @@ public interface ApiService {
             @Query("limit") Integer limit
     );
 
+    @POST("/users/{userId}/activity")
+    Call<UserActivityItem> createUserActivity(
+            @Path("userId") String userId,
+            @Body CreateUserActivityRequest request
+    );
+
     @GET("/users/{userId}/notes")
     Call<List<CollectionNoteItem>> getUserNotes(
             @Path("userId") String userId,

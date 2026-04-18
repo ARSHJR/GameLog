@@ -53,4 +53,7 @@ dependencies {
 
     // WorkManager for background tasks
     implementation("androidx.work:work-runtime:2.10.0")
+
+    // Glide for remote image loading with placeholders
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 }

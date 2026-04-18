@@ -7,7 +7,7 @@ public class UserActivityItem {
     @SerializedName(value = "activity_id", alternate = {"id", "log_id"})
     private String activityId;
 
-    @SerializedName(value = "action_type", alternate = {"action", "activity_type", "event_type"})
+    @SerializedName(value = "action_type", alternate = {"action", "activity_type", "event_type", "action_name"})
     private String actionType;
 
     @SerializedName(value = "entity_type", alternate = {"target_type"})

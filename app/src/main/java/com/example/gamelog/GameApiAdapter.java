@@ -96,8 +96,7 @@ public class GameApiAdapter extends RecyclerView.Adapter<GameApiAdapter.GameView
             String meta = buildMetaLine(game);
             metaText.setText(meta);
 
-            // Placeholder visual for now; URL loading can be wired in phase 2.
-            coverImage.setImageResource(R.drawable.ic_explore);
+            ImageLoader.loadCover(coverImage, game.getCoverImageUrl(), R.drawable.ic_explore);
 
             itemView.setOnClickListener(v -> {
                 if (clickListener != null) {

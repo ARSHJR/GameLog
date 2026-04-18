@@ -67,6 +67,7 @@ public class GameDetailActivity extends AppCompatActivity {
     private boolean isFavouriteRequestInFlight;
     private boolean isFavouriteSelected;
     private boolean fromCollectionContext;
+    private long screenStartMs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -193,8 +194,7 @@ public class GameDetailActivity extends AppCompatActivity {
         publisherValue.setText(orFallback(game.getPublisher(), "Unknown"));
         platformValue.setText(orFallback(game.getPlatform(), "Unknown"));
 
-        // Placeholder hero while URL image loading is deferred to a later phase.
-        heroImage.setImageResource(R.drawable.ic_games);
+        ImageLoader.loadCover(heroImage, game.getCoverImageUrl(), R.drawable.ic_games);
 
         if (TextUtils.isEmpty(gameTitleHint)) {
             heroCaption.setText(orFallback(game.getTitle(), "Game landing view"));
@@ -451,5 +451,29 @@ public class GameDetailActivity extends AppCompatActivity {
     private void setActionStatus(String text, int colorRes) {
         actionStatusText.setText(text);
         actionStatusText.setTextColor(ContextCompat.getColor(this, colorRes));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        screenStartMs = System.currentTimeMillis();
+    }
+
+    @Override
+    protected void onStop() {
+        if (screenStartMs > 0) {
+            String entityId = TextUtils.isEmpty(gameId) ? "game_detail" : gameId;
+            String details = fromCollectionContext ? "Game detail from collection" : "Game detail from explore";
+            UserActivityLogger.logDuration(
+                    this,
+                    "screen_view",
+                    "game",
+                    entityId,
+                    details,
+                    System.currentTimeMillis() - screenStartMs
+            );
+            screenStartMs = 0;
+        }
+        super.onStop();
     }
 }

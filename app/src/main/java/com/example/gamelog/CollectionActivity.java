@@ -41,6 +41,7 @@ public class CollectionActivity extends AppCompatActivity {
 
     private String backendUserId;
     private final List<CollectionEntryItem> allCollectionEntries = new ArrayList<>();
+    private long screenStartMs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,5 +190,27 @@ public class CollectionActivity extends AppCompatActivity {
         } else {
             showContentState();
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        screenStartMs = System.currentTimeMillis();
+    }
+
+    @Override
+    protected void onStop() {
+        if (screenStartMs > 0) {
+            UserActivityLogger.logDuration(
+                    this,
+                    "screen_view",
+                    "screen",
+                    "collection",
+                    "Collection screen",
+                    System.currentTimeMillis() - screenStartMs
+            );
+            screenStartMs = 0;
+        }
+        super.onStop();
     }
 }

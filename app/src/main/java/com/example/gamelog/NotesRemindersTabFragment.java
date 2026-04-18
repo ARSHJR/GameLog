@@ -1,5 +1,10 @@
 package com.example.gamelog;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -12,12 +17,22 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Data;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -27,8 +42,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -61,7 +78,58 @@ public class NotesRemindersTabFragment extends Fragment {
     private GlobalRemindersAdapter completedAdapter;
     private MaterialButtonToggleGroup topToggleGroup;
 
+    private FusedLocationProviderClient fusedLocationClient;
+    private AlertDialog activeCreateDialog;
+    private TextView activeLocationStateText;
+    private TextView activeImageStateText;
+    private Uri selectedImageUri;
+    private Double selectedLatitude;
+    private Double selectedLongitude;
+    private ReminderFrequencyOption selectedFrequencyOption;
+
     private final Set<String> mutationInFlightNoteIds = new HashSet<>();
+    private final List<ReminderFrequencyOption> reminderFrequencyOptions = buildReminderFrequencyOptions();
+
+    private final ActivityResultLauncher<String> imagePickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri == null) {
+                    return;
+                }
+
+                selectedImageUri = uri;
+                if (activeImageStateText != null) {
+                    String label = uri.getLastPathSegment();
+                    activeImageStateText.setText(TextUtils.isEmpty(label) ? "Selected" : "Selected: " + label);
+                }
+            });
+
+    private final ActivityResultLauncher<String> requestMediaPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                if (granted) {
+                    imagePickerLauncher.launch("image/*");
+                } else if (isAdded()) {
+                    Toast.makeText(requireContext(), "Media permission is required to choose an image.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+    private final ActivityResultLauncher<String[]> requestLocationPermissionsLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                boolean fineGranted = Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_FINE_LOCATION));
+                boolean coarseGranted = Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_COARSE_LOCATION));
+
+                if (fineGranted || coarseGranted) {
+                    fetchCurrentLocation();
+                } else if (isAdded()) {
+                    Toast.makeText(requireContext(), "Location permission is required to fetch location.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+    private final ActivityResultLauncher<String> requestNotificationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                if (!granted && isAdded()) {
+                    Toast.makeText(requireContext(), "Notification permission denied. Reminder still scheduled.", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     private interface CollectionLookupCallback {
         void onFoundUserGameId(String userGameId);
@@ -89,6 +157,36 @@ public class NotesRemindersTabFragment extends Fragment {
         }
     }
 
+    private static class ReminderFrequencyOption {
+        private final String label;
+        private final String backendValue;
+        private final int intervalMinutes;
+
+        ReminderFrequencyOption(String label, String backendValue, int intervalMinutes) {
+            this.label = label;
+            this.backendValue = backendValue;
+            this.intervalMinutes = intervalMinutes;
+        }
+
+        String getLabel() {
+            return label;
+        }
+
+        String getBackendValue() {
+            return backendValue;
+        }
+
+        int getIntervalMinutes() {
+            return intervalMinutes;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -98,6 +196,7 @@ public class NotesRemindersTabFragment extends Fragment {
         setupToggles(root);
         setupAdapters();
         setupActions(root);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         backendUserId = BackendUserHelper.getBackendUserId(requireContext());
         if (TextUtils.isEmpty(backendUserId)) {
@@ -252,20 +351,74 @@ public class NotesRemindersTabFragment extends Fragment {
 
         MaterialButtonToggleGroup typeGroup = dialogView.findViewById(R.id.global_create_type_group);
         AutoCompleteTextView gameDropdown = dialogView.findViewById(R.id.global_create_game_dropdown);
+        AutoCompleteTextView frequencyDropdown = dialogView.findViewById(R.id.global_create_frequency_dropdown);
+        View frequencyContainer = dialogView.findViewById(R.id.global_create_frequency_container);
         EditText titleInput = dialogView.findViewById(R.id.global_create_title);
         EditText noteTextInput = dialogView.findViewById(R.id.global_create_note_text);
-        EditText mediaUriInput = dialogView.findViewById(R.id.global_create_media_uri);
-        EditText latitudeInput = dialogView.findViewById(R.id.global_create_latitude);
-        EditText longitudeInput = dialogView.findViewById(R.id.global_create_longitude);
+        MaterialButton pickImageButton = dialogView.findViewById(R.id.global_create_pick_image_button);
+        TextView imageStateText = dialogView.findViewById(R.id.global_create_image_state);
+        MaterialButton getLocationButton = dialogView.findViewById(R.id.global_create_get_location_button);
+        TextView locationStateText = dialogView.findViewById(R.id.global_create_location_state);
         TextView feedbackText = dialogView.findViewById(R.id.global_create_feedback);
         Button cancelButton = dialogView.findViewById(R.id.global_create_cancel);
         Button saveButton = dialogView.findViewById(R.id.global_create_save);
 
+        selectedImageUri = null;
+        selectedLatitude = null;
+        selectedLongitude = null;
+        selectedFrequencyOption = findFrequencyByLabel("1 hour");
+        imageStateText.setText("Not set");
+        locationStateText.setText("Not set");
+
+        ArrayAdapter<ReminderFrequencyOption> frequencyAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                reminderFrequencyOptions
+        );
+        frequencyDropdown.setAdapter(frequencyAdapter);
+        frequencyDropdown.setOnClickListener(v -> frequencyDropdown.showDropDown());
+        frequencyDropdown.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                frequencyDropdown.showDropDown();
+            }
+        });
+        if (selectedFrequencyOption != null) {
+            frequencyDropdown.setText(selectedFrequencyOption.getLabel(), false);
+        }
+        frequencyDropdown.setOnItemClickListener((parent, view, position, id) -> {
+            ReminderFrequencyOption option = frequencyAdapter.getItem(position);
+            if (option != null) {
+                selectedFrequencyOption = option;
+            }
+        });
+
         if (TYPE_REMINDER.equals(selectedType)) {
             typeGroup.check(R.id.global_create_type_reminder);
+            frequencyContainer.setVisibility(View.VISIBLE);
         } else {
             typeGroup.check(R.id.global_create_type_note);
+            frequencyContainer.setVisibility(View.GONE);
         }
+
+        typeGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) {
+                return;
+            }
+            if (checkedId == R.id.global_create_type_reminder) {
+                frequencyContainer.setVisibility(View.VISIBLE);
+                if (selectedFrequencyOption == null) {
+                    selectedFrequencyOption = findFrequencyByLabel("1 hour");
+                }
+                if (selectedFrequencyOption != null) {
+                    frequencyDropdown.setText(selectedFrequencyOption.getLabel(), false);
+                }
+            } else {
+                frequencyContainer.setVisibility(View.GONE);
+            }
+        });
+
+        pickImageButton.setOnClickListener(v -> startImageSelectionFlow());
+        getLocationButton.setOnClickListener(v -> startLocationFetchFlow());
 
         final Map<String, String> mutableCollectionMap = new HashMap<>(prefetchedCollectionMap);
         final GameSelectionOption[] selectedGame = new GameSelectionOption[1];
@@ -293,6 +446,19 @@ public class NotesRemindersTabFragment extends Fragment {
                 .setView(dialogView)
                 .setCancelable(false)
                 .create();
+        activeCreateDialog = dialog;
+        activeImageStateText = imageStateText;
+        activeLocationStateText = locationStateText;
+
+        dialog.setOnDismissListener(d -> {
+            activeCreateDialog = null;
+            activeImageStateText = null;
+            activeLocationStateText = null;
+            selectedImageUri = null;
+            selectedLatitude = null;
+            selectedLongitude = null;
+            selectedFrequencyOption = null;
+        });
 
         cancelButton.setOnClickListener(v -> {
             if (!isCreateRequestInFlight) {
@@ -321,19 +487,22 @@ public class NotesRemindersTabFragment extends Fragment {
 
             String title = toNullableText(titleInput.getText() != null ? titleInput.getText().toString() : null);
             String noteText = toNullableText(noteTextInput.getText() != null ? noteTextInput.getText().toString() : null);
-            String mediaUri = toNullableText(mediaUriInput.getText() != null ? mediaUriInput.getText().toString() : null);
+            String mediaUri = selectedImageUri != null ? selectedImageUri.toString() : null;
+            Double latitude = selectedLatitude;
+            Double longitude = selectedLongitude;
+            ReminderFrequencyOption frequencyOption = null;
+
+            if (TYPE_REMINDER.equals(createType)) {
+                frequencyOption = resolveSelectedFrequency(frequencyDropdown.getText() != null ? frequencyDropdown.getText().toString() : null);
+                if (frequencyOption == null) {
+                    showDialogError(feedbackText, "Please choose a reminder frequency.");
+                    return;
+                }
+            }
+            final ReminderFrequencyOption finalFrequencyOption = frequencyOption;
 
             if (title == null && noteText == null) {
                 showDialogError(feedbackText, "Add at least a title or note text.");
-                return;
-            }
-
-            Double latitude = parseNullableDouble(latitudeInput.getText() != null ? latitudeInput.getText().toString() : null);
-            Double longitude = parseNullableDouble(longitudeInput.getText() != null ? longitudeInput.getText().toString() : null);
-            String rawLat = toNullableText(latitudeInput.getText() != null ? latitudeInput.getText().toString() : null);
-            String rawLng = toNullableText(longitudeInput.getText() != null ? longitudeInput.getText().toString() : null);
-            if ((rawLat != null && latitude == null) || (rawLng != null && longitude == null)) {
-                showDialogError(feedbackText, "Latitude/Longitude must be valid numbers.");
                 return;
             }
 
@@ -344,7 +513,8 @@ public class NotesRemindersTabFragment extends Fragment {
                 @Override
                 public void onFoundUserGameId(String userGameId) {
                     createGlobalNoteOrReminder(dialog, saveButton, cancelButton, createType, userGameId,
-                            title, noteText, mediaUri, latitude, longitude);
+                            title, noteText, mediaUri, latitude, longitude,
+                            finalFrequencyOption, resolvedSelectedGame.toString());
                 }
 
                 @Override
@@ -448,8 +618,13 @@ public class NotesRemindersTabFragment extends Fragment {
     private void createGlobalNoteOrReminder(AlertDialog dialog, Button saveButton, Button cancelButton,
                                             String createType, String userGameId,
                                             String title, String noteText,
-                                            String mediaUri, Double latitude, Double longitude) {
+                            String mediaUri, Double latitude, Double longitude,
+                            @Nullable ReminderFrequencyOption frequencyOption,
+                            @Nullable String selectedGameTitle) {
         String taskStatus = TYPE_REMINDER.equals(createType) ? "pending" : null;
+        String frequency = TYPE_REMINDER.equals(createType) && frequencyOption != null
+            ? frequencyOption.getBackendValue()
+            : null;
 
         CreateCollectionNoteRequest request = new CreateCollectionNoteRequest(
                 createType,
@@ -458,7 +633,8 @@ public class NotesRemindersTabFragment extends Fragment {
                 mediaUri,
                 latitude,
                 longitude,
-                taskStatus
+            taskStatus,
+            frequency
         );
 
         ApiService apiService = RetrofitClient.getApiService();
@@ -473,6 +649,11 @@ public class NotesRemindersTabFragment extends Fragment {
                 if (!response.isSuccessful()) {
                     Toast.makeText(requireContext(), "Failed to create entry.", Toast.LENGTH_SHORT).show();
                     return;
+                }
+
+                CollectionNoteItem createdItem = response.body();
+                if (TYPE_REMINDER.equals(createType) && frequencyOption != null && createdItem != null) {
+                    scheduleReminderWork(createdItem, selectedGameTitle, title, noteText, frequencyOption.getIntervalMinutes());
                 }
 
                 dialog.dismiss();
@@ -550,6 +731,151 @@ public class NotesRemindersTabFragment extends Fragment {
         }
 
         return null;
+    }
+
+    private List<ReminderFrequencyOption> buildReminderFrequencyOptions() {
+        List<ReminderFrequencyOption> options = new ArrayList<>();
+        options.add(new ReminderFrequencyOption("5 min", "5_min", 5));
+        options.add(new ReminderFrequencyOption("20 min", "20_min", 20));
+        options.add(new ReminderFrequencyOption("1 hour", "1_hour", 60));
+        options.add(new ReminderFrequencyOption("6 hours", "6_hour", 360));
+        options.add(new ReminderFrequencyOption("24 hours", "1_day", 1440));
+        return options;
+    }
+
+    @Nullable
+    private ReminderFrequencyOption findFrequencyByLabel(String label) {
+        if (TextUtils.isEmpty(label)) {
+            return null;
+        }
+
+        for (ReminderFrequencyOption option : reminderFrequencyOptions) {
+            if (label.equalsIgnoreCase(option.getLabel())) {
+                return option;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private ReminderFrequencyOption resolveSelectedFrequency(String rawInput) {
+        ReminderFrequencyOption byLabel = findFrequencyByLabel(rawInput == null ? null : rawInput.trim());
+        if (byLabel != null) {
+            selectedFrequencyOption = byLabel;
+            return byLabel;
+        }
+        return selectedFrequencyOption;
+    }
+
+    private void startImageSelectionFlow() {
+        if (!isAdded()) {
+            return;
+        }
+
+        String mediaPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                ? Manifest.permission.READ_MEDIA_IMAGES
+                : Manifest.permission.READ_EXTERNAL_STORAGE;
+
+        if (ContextCompat.checkSelfPermission(requireContext(), mediaPermission) == PackageManager.PERMISSION_GRANTED) {
+            imagePickerLauncher.launch("image/*");
+            return;
+        }
+
+        requestMediaPermissionLauncher.launch(mediaPermission);
+    }
+
+    private void startLocationFetchFlow() {
+        if (!isAdded()) {
+            return;
+        }
+
+        boolean fineGranted = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        boolean coarseGranted = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+        if (fineGranted || coarseGranted) {
+            fetchCurrentLocation();
+            return;
+        }
+
+        requestLocationPermissionsLauncher.launch(new String[]{
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        });
+    }
+
+    private void fetchCurrentLocation() {
+        if (!isAdded()) {
+            return;
+        }
+
+        try {
+            fusedLocationClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, null)
+                    .addOnSuccessListener(location -> {
+                        if (!isAdded()) {
+                            return;
+                        }
+
+                        if (location == null) {
+                            Toast.makeText(requireContext(), "Could not determine current location.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        selectedLatitude = location.getLatitude();
+                        selectedLongitude = location.getLongitude();
+                        if (activeLocationStateText != null) {
+                            activeLocationStateText.setText(String.format(Locale.US, "%.5f, %.5f", selectedLatitude, selectedLongitude));
+                        }
+                    })
+                    .addOnFailureListener(error -> {
+                        if (isAdded()) {
+                            Toast.makeText(requireContext(), "Failed to fetch location.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } catch (SecurityException ex) {
+            if (isAdded()) {
+                Toast.makeText(requireContext(), "Location permission error.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void scheduleReminderWork(@NonNull CollectionNoteItem createdItem,
+                                      @Nullable String gameTitle,
+                                      @Nullable String reminderTitle,
+                                      @Nullable String reminderBody,
+                                      int intervalMinutes) {
+        if (!isAdded()) {
+            return;
+        }
+
+        String noteId = toNullableText(createdItem.getNoteId());
+        if (TextUtils.isEmpty(noteId)) {
+            Toast.makeText(requireContext(), "Reminder created, but scheduling id is missing.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+
+        Data inputData = new Data.Builder()
+                .putString(ReminderWorker.INPUT_NOTE_ID, noteId)
+                .putString(ReminderWorker.INPUT_GAME_TITLE, toNullableText(gameTitle))
+                .putString(ReminderWorker.INPUT_REMINDER_TITLE, toNullableText(reminderTitle))
+                .putString(ReminderWorker.INPUT_REMINDER_BODY, toNullableText(reminderBody))
+                .build();
+
+        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(
+                ReminderWorker.class,
+                intervalMinutes,
+                TimeUnit.MINUTES
+        ).setInputData(inputData).build();
+
+        WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(
+                "global_reminder_" + noteId,
+                ExistingPeriodicWorkPolicy.REPLACE,
+                workRequest
+        );
     }
 
     private void setDialogLoadingState(Button saveButton, Button cancelButton, boolean loading) {

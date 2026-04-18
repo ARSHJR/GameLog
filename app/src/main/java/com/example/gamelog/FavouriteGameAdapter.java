@@ -83,7 +83,7 @@ public class FavouriteGameAdapter extends RecyclerView.Adapter<FavouriteGameAdap
             badgeText.setText("FAVOURITE");
             metadataText.setText(buildMetadata(item));
 
-            coverIcon.setImageResource(R.drawable.ic_favourite);
+            ImageLoader.loadCover(coverIcon, item.getCoverImageUrl(), R.drawable.ic_favourite);
 
             itemView.setOnClickListener(v -> {
                 if (listener != null) {

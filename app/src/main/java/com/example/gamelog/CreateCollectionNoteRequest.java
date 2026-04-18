@@ -32,9 +32,20 @@ public class CreateCollectionNoteRequest {
     @Nullable
     private final String taskStatus;
 
+    @SerializedName("frequency")
+    @Nullable
+    private final String frequency;
+
     public CreateCollectionNoteRequest(String noteType, @Nullable String title, @Nullable String noteText,
                                        @Nullable String mediaUri, @Nullable Double latitude,
                                        @Nullable Double longitude, @Nullable String taskStatus) {
+        this(noteType, title, noteText, mediaUri, latitude, longitude, taskStatus, null);
+    }
+
+    public CreateCollectionNoteRequest(String noteType, @Nullable String title, @Nullable String noteText,
+                                       @Nullable String mediaUri, @Nullable Double latitude,
+                                       @Nullable Double longitude, @Nullable String taskStatus,
+                                       @Nullable String frequency) {
         this.noteType = noteType;
         this.title = title;
         this.noteText = noteText;
@@ -42,6 +53,7 @@ public class CreateCollectionNoteRequest {
         this.latitude = latitude;
         this.longitude = longitude;
         this.taskStatus = taskStatus;
+        this.frequency = frequency;
     }
 
     public String getNoteType() {
@@ -76,5 +88,10 @@ public class CreateCollectionNoteRequest {
     @Nullable
     public String getTaskStatus() {
         return taskStatus;
+    }
+
+    @Nullable
+    public String getFrequency() {
+        return frequency;
     }
 }

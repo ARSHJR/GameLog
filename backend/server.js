@@ -413,6 +413,33 @@ app.post('/collection/:userGameId/notes', async (req, res) => {
       || reminderPayload.snoozed_until !== undefined;
 
     if (note_type === 'reminder' && hasReminderFields) {
+      const rawFrequency = typeof reminderPayload.frequency === 'string'
+        ? reminderPayload.frequency.trim().toLowerCase()
+        : '';
+      const reminderFrequencyAliasMap = {
+        '5 min': '5_min',
+        '20 min': '20_min',
+        '1 hour': '1_hour',
+        '6 hours': '6_hour',
+        '24 hours': '1_day',
+        '5_min': '5_min',
+        '20_min': '20_min',
+        '1_hour': '1_hour',
+        '6_hour': '6_hour',
+        '1_day': '1_day'
+      };
+      const normalizedFrequency = reminderFrequencyAliasMap[rawFrequency] || '1_hour';
+      const frequencyMinutes = {
+        '5_min': 5,
+        '20_min': 20,
+        '1_hour': 60,
+        '6_hour': 360,
+        '1_day': 1440
+      };
+      const nextTriggerAt = new Date(
+        Date.now() + (frequencyMinutes[normalizedFrequency] || 60) * 60 * 1000
+      ).toISOString();
+
       const reminderQuery = `
         INSERT INTO public.game_reminders (
           note_id,
@@ -428,9 +455,9 @@ app.post('/collection/:userGameId/notes', async (req, res) => {
 
       const reminderParams = [
         note.note_id,
-        reminderPayload.frequency || null,
+        normalizedFrequency,
         reminderPayload.is_active !== undefined ? Boolean(reminderPayload.is_active) : true,
-        reminderPayload.next_trigger_at || null,
+        nextTriggerAt,
         reminderPayload.last_triggered_at || null,
         reminderPayload.snoozed_until || null
       ];
@@ -726,6 +753,144 @@ app.get('/users/:userId/profile', async (req, res) => {
   }
 });
 
+app.post('/users/:userId/activity', async (req, res) => {
+  const userId = req.params.userId;
+  const {
+    action_name,
+    entity_type = 'screen',
+    entity_id = null,
+    action_details = null,
+    duration_seconds = 0,
+    occurred_at = null
+  } = req.body || {};
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Invalid userId' });
+  }
+
+  const normalizedActionName = typeof action_name === 'string' ? action_name.trim() : '';
+  if (!normalizedActionName) {
+    return res.status(400).json({ error: 'action_name is required' });
+  }
+
+  const normalizedEntityType = typeof entity_type === 'string'
+    ? entity_type.trim().toLowerCase()
+    : '';
+  const allowedEntityTypes = new Set([
+    'user',
+    'game',
+    'user_game',
+    'game_note',
+    'game_reminder',
+    'auth_account',
+    'explore',
+    'notification',
+    'system'
+  ]);
+  const legacyEntityTypeMap = {
+    shell_tab: 'system',
+    screen: 'system'
+  };
+  let resolvedEntityType = allowedEntityTypes.has(normalizedEntityType)
+    ? normalizedEntityType
+    : (legacyEntityTypeMap[normalizedEntityType] || 'system');
+
+  const normalizedEntityId = typeof entity_id === 'string' ? entity_id.trim() : '';
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  let resolvedEntityId = uuidPattern.test(normalizedEntityId) ? normalizedEntityId : null;
+
+  const normalizedDuration = Number.parseInt(duration_seconds, 10);
+  if (!Number.isInteger(normalizedDuration) || normalizedDuration < 0) {
+    return res.status(400).json({ error: 'duration_seconds must be a non-negative integer' });
+  }
+
+  let normalizedActionDetails = null;
+  if (typeof action_details === 'string') {
+    const trimmedDetails = action_details.trim();
+    if (trimmedDetails) {
+      try {
+        const parsedDetails = JSON.parse(trimmedDetails);
+        if (parsedDetails && typeof parsedDetails === 'object' && !Array.isArray(parsedDetails)) {
+          normalizedActionDetails = parsedDetails;
+        } else {
+          normalizedActionDetails = { label: trimmedDetails };
+        }
+      } catch (jsonError) {
+        normalizedActionDetails = { label: trimmedDetails };
+      }
+    }
+  } else if (action_details && typeof action_details === 'object' && !Array.isArray(action_details)) {
+    normalizedActionDetails = action_details;
+  }
+
+  if (normalizedActionName.toLowerCase() === 'screen_view') {
+    const detailsLabel = normalizedActionDetails && typeof normalizedActionDetails.label === 'string'
+      ? normalizedActionDetails.label.trim().toLowerCase()
+      : '';
+
+    let screenName = null;
+    if (normalizedEntityId && !resolvedEntityId) {
+      screenName = normalizedEntityId;
+    } else if (detailsLabel.includes('game detail')) {
+      screenName = 'game_detail';
+    } else if (detailsLabel.includes('collection')) {
+      screenName = 'collection';
+    } else if (detailsLabel.includes('explore')) {
+      screenName = 'explore';
+    }
+
+    if (!screenName) {
+      screenName = 'unknown_screen';
+    }
+
+    if (!resolvedEntityId) {
+      resolvedEntityType = 'system';
+      resolvedEntityId = null;
+    }
+
+    const screenDetails = { screen: screenName };
+    if (screenName === 'game_detail') {
+      if (detailsLabel.includes('collection')) {
+        screenDetails.origin = 'collection';
+      } else if (detailsLabel.includes('explore')) {
+        screenDetails.origin = 'explore';
+      }
+    }
+    normalizedActionDetails = screenDetails;
+  }
+
+  try {
+    const query = `
+      INSERT INTO public.user_activity_logs (
+        user_id,
+        action_name,
+        entity_type,
+        entity_id,
+        action_details,
+        duration_seconds,
+        occurred_at
+      )
+      VALUES ($1, $2, $3, $4, $5::jsonb, $6, COALESCE($7::timestamptz, NOW()))
+      RETURNING *;
+    `;
+
+    const params = [
+      userId,
+      normalizedActionName,
+      resolvedEntityType,
+      resolvedEntityId,
+      normalizedActionDetails ? JSON.stringify(normalizedActionDetails) : null,
+      normalizedDuration,
+      occurred_at
+    ];
+
+    const { rows } = await db.query(query, params);
+    return res.status(201).json(rows[0]);
+  } catch (error) {
+    return handleServerError(res, error);
+  }
+});
+
 app.get('/users/:userId/activity', async (req, res) => {
   const userId = (req.params.userId);
   const limitValue = Number.parseInt(req.query.limit, 10);
@@ -737,7 +902,15 @@ app.get('/users/:userId/activity', async (req, res) => {
 
   try {
     const query = `
-      SELECT *
+      SELECT
+        activity_log_id AS activity_id,
+        user_id,
+        action_name AS action_type,
+        entity_type,
+        entity_id,
+        action_details,
+        duration_seconds,
+        occurred_at
       FROM public.user_activity_logs
       WHERE user_id = $1
       ORDER BY occurred_at DESC

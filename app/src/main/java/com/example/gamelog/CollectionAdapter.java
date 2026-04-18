@@ -86,7 +86,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
             favouriteBadge.setVisibility(isFavourite ? View.VISIBLE : View.GONE);
 
             metadata.setText(buildMetadata(item));
-            icon.setImageResource(R.drawable.ic_games);
+            ImageLoader.loadCover(icon, item.getCoverImageUrl(), R.drawable.ic_games);
 
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
