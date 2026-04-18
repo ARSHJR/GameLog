@@ -30,7 +30,12 @@
         <activity android:name=".LoginActivity" />
         <activity android:name=".DashboardActivity" />
         <activity android:name=".GamesActivity" />
+        <activity android:name=".CollectionActivity" />
+        <activity android:name=".CollectionGameDetailActivity" />
+        <activity android:name=".ProfileActivity" />
         <activity android:name=".SettingsActivity" />
+        <activity android:name=".FavouritesActivity" />
+        <activity android:name=".GameDetailActivity" />
         <activity android:name=".ApiGamesActivity" />
 
     </application>

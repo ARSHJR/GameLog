@@ -3,6 +3,7 @@ package com.example.gamelog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
@@ -17,7 +18,11 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -31,10 +36,16 @@ public class LoginActivity extends AppCompatActivity {
 
         // Check for existing login
         SharedPreferences sharedPreferences = getSharedPreferences("GameLogPrefs", MODE_PRIVATE);
-        if (sharedPreferences.getBoolean("is_logged_in", false)) {
+        boolean isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false);
+        if (isLoggedIn && BackendUserHelper.hasStoredBackendUserId(this)) {
             startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
             finish();
             return;
+        }
+
+        if (isLoggedIn) {
+            sharedPreferences.edit().putBoolean("is_logged_in", false).apply();
+            BackendUserHelper.clearBackendUserId(this);
         }
 
         setContentView(R.layout.activity_login);
@@ -50,8 +61,7 @@ public class LoginActivity extends AppCompatActivity {
 
         findViewById(R.id.btnGoogleSignIn).setOnClickListener(v -> signIn());
         findViewById(R.id.login_button).setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
-            finish();
+            signIn();
         });
     }
 
@@ -80,21 +90,61 @@ public class LoginActivity extends AppCompatActivity {
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        // Sign in success, update UI with the signed-in user's information
-                        SharedPreferences sharedPreferences = getSharedPreferences("GameLogPrefs", MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putBoolean("is_logged_in", true);
-                        editor.putString("login_provider", "google");
-                        editor.putString("user_email", mAuth.getCurrentUser().getEmail());
-                        editor.putString("user_name", mAuth.getCurrentUser().getDisplayName());
-                        editor.apply();
-
-                        startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
-                        finish();
+                        FirebaseUser currentUser = mAuth.getCurrentUser();
+                        if (currentUser == null) {
+                            Toast.makeText(LoginActivity.this, "Authentication failed. Please try again.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        resolveAndPersistBackendUser(currentUser);
                     } else {
                         // If sign in fails, display a message to the user.
                         Toast.makeText(LoginActivity.this, "Authentication Failed.", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void resolveAndPersistBackendUser(FirebaseUser currentUser) {
+        String authUserId = currentUser.getUid();
+        String email = currentUser.getEmail();
+        String displayName = currentUser.getDisplayName();
+
+        ApiService apiService = RetrofitClient.getApiService();
+        apiService.resolveBackendUser(authUserId, email, displayName).enqueue(new Callback<ResolvedBackendUser>() {
+            @Override
+            public void onResponse(Call<ResolvedBackendUser> call, Response<ResolvedBackendUser> response) {
+                if (!response.isSuccessful() || response.body() == null || TextUtils.isEmpty(response.body().getUserId())) {
+                    handleBackendIdentityFailure("Unable to resolve backend account.");
+                    return;
+                }
+
+                SharedPreferences sharedPreferences = getSharedPreferences("GameLogPrefs", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("is_logged_in", true);
+                editor.putString("login_provider", "google");
+                editor.putString("user_email", currentUser.getEmail());
+                editor.putString("user_name", currentUser.getDisplayName());
+                editor.apply();
+
+                BackendUserHelper.persistBackendUserId(LoginActivity.this, response.body().getUserId());
+
+                startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+                finish();
+            }
+
+            @Override
+            public void onFailure(Call<ResolvedBackendUser> call, Throwable t) {
+                handleBackendIdentityFailure("Unable to resolve backend account.");
+            }
+        });
+    }
+
+    private void handleBackendIdentityFailure(String message) {
+        BackendUserHelper.clearBackendUserId(this);
+        SharedPreferences sharedPreferences = getSharedPreferences("GameLogPrefs", MODE_PRIVATE);
+        sharedPreferences.edit().putBoolean("is_logged_in", false).apply();
+
+        FirebaseAuth.getInstance().signOut();
+        mGoogleSignInClient.signOut();
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 }

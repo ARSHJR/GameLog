@@ -677,6 +677,68 @@ app.get('/users/:userId/activity', async (req, res) => {
   }
 });
 
+app.get('/users/resolve', async (req, res) => {
+  const authUserId = typeof req.query.authUserId === 'string' ? req.query.authUserId.trim() : '';
+  const email = typeof req.query.email === 'string' ? req.query.email.trim() : '';
+  const displayName = typeof req.query.displayName === 'string' ? req.query.displayName.trim() : '';
+
+  if (!email) {
+    return res.status(400).json({ error: 'email is required' });
+  }
+
+  const fallbackDisplayName = displayName || email.split('@')[0] || 'Player';
+
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const byEmailQuery = `
+      SELECT
+        u.user_id,
+        u.auth_user_id,
+        u.email,
+        u.display_name,
+        u.avatar_url
+      FROM public.users u
+      WHERE LOWER(u.email) = LOWER($1)
+      LIMIT 1;
+    `;
+    const emailResult = await client.query(byEmailQuery, [email]);
+
+    if (emailResult.rows.length > 0) {
+      await client.query('COMMIT');
+      return res.json(emailResult.rows[0]);
+    }
+
+    // Intentionally ignore authUserId here because users.auth_user_id is UUID-typed
+    // and Firebase uid values are not UUIDs.
+    void authUserId;
+
+    const createUserQuery = `
+      INSERT INTO public.users (
+        email,
+        display_name,
+        is_active
+      )
+      VALUES ($1, $2, true)
+      RETURNING user_id, auth_user_id, email, display_name, avatar_url;
+    `;
+
+    const createResult = await client.query(createUserQuery, [email, fallbackDisplayName]);
+    await client.query('COMMIT');
+    return res.status(201).json(createResult.rows[0]);
+  } catch (error) {
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackError) {
+      console.error(rollbackError);
+    }
+    return handleServerError(res, error);
+  } finally {
+    client.release();
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`GameLog API server is running on http://localhost:${PORT}`);
 });

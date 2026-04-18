@@ -11,30 +11,30 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="18dp"
-        android:gravity="center_vertical">
+        android:padding="18dp">
 
         <ImageView
-            android:id="@+id/image_cover"
+            android:id="@+id/favourite_cover_icon"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@drawable/ic_explore"
-            app:tint="@color/accent_cyan"
             android:background="@drawable/bg_icon_circle_cyan"
+            android:contentDescription="Favourite game"
             android:padding="12dp"
-            android:contentDescription="Game icon" />
+            android:src="@drawable/ic_favourite"
+            android:tint="@color/accent_cyan" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
             android:layout_marginStart="16dp"
-            android:layout_marginEnd="12dp">
+            android:layout_marginEnd="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/text_title"
+                android:id="@+id/favourite_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_high_emp"
@@ -42,7 +42,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/text_description"
+                android:id="@+id/favourite_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
@@ -52,23 +52,26 @@
                 android:textSize="13sp" />
 
             <TextView
-                android:id="@+id/text_genres"
+                android:id="@+id/favourite_badge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:maxLines="1"
-                android:ellipsize="end"
+                android:background="@drawable/bg_detail_genres"
+                android:paddingStart="10dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="4dp"
                 android:textColor="@color/accent_cyan"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/text_meta"
+                android:id="@+id/favourite_metadata"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:maxLines="1"
+                android:layout_marginTop="8dp"
                 android:ellipsize="end"
+                android:maxLines="1"
                 android:textColor="@color/text_soft"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -76,9 +79,9 @@
         <ImageView
             android:layout_width="20dp"
             android:layout_height="20dp"
+            android:contentDescription="Open game"
             android:src="@drawable/ic_chevron_right"
-            app:tint="@color/text_soft"
-            android:contentDescription="Open details" />
+            app:tint="@color/text_soft" />
 
     </LinearLayout>
 

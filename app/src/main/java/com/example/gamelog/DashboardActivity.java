@@ -19,7 +19,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
 
         MaterialCardView gamesCard = findViewById(R.id.games_card);
-        gamesCard.setOnClickListener(v -> startActivity(new Intent(DashboardActivity.this, GamesActivity.class)));
+        gamesCard.setOnClickListener(v -> startActivity(new Intent(DashboardActivity.this, CollectionActivity.class)));
 
         MaterialCardView settingsCard = findViewById(R.id.settings_card);
         settingsCard.setOnClickListener(v -> startActivity(new Intent(DashboardActivity.this, SettingsActivity.class)));
@@ -27,5 +27,11 @@ public class DashboardActivity extends AppCompatActivity {
         // Button to explore games from REST API
         MaterialCardView exploreApiCard = findViewById(R.id.explore_api_card);
         exploreApiCard.setOnClickListener(v -> startActivity(new Intent(DashboardActivity.this, ApiGamesActivity.class)));
+
+        MaterialCardView favouritesCard = findViewById(R.id.favourites_card);
+        favouritesCard.setOnClickListener(v -> startActivity(new Intent(DashboardActivity.this, FavouritesActivity.class)));
+
+        MaterialCardView profileCard = findViewById(R.id.profile_card);
+        profileCard.setOnClickListener(v -> startActivity(new Intent(DashboardActivity.this, ProfileActivity.class)));
     }
 }

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_explore_screen"
+    android:padding="20dp"
+    tools:context=".CollectionActivity">
+
+    <ImageButton
+        android:id="@+id/collection_back_button"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:background="@drawable/bg_icon_circle_grey"
+        android:contentDescription="Back"
+        android:padding="10dp"
+        android:src="@drawable/ic_arrow_back"
+        android:tint="@color/text_high_emp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/collection_header_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:text="My Collection"
+        style="@style/AppText.ScreenTitle"
+        app:layout_constraintBottom_toBottomOf="@id/collection_back_button"
+        app:layout_constraintStart_toEndOf="@id/collection_back_button"
+        app:layout_constraintTop_toTopOf="@id/collection_back_button" />
+
+    <TextView
+        android:id="@+id/collection_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Your owned and planned game entries"
+        style="@style/AppText.ScreenSubtitle"
+        app:layout_constraintStart_toStartOf="@id/collection_header_title"
+        app:layout_constraintTop_toBottomOf="@id/collection_header_title" />
+
+    <ProgressBar
+        android:id="@+id/collection_loading_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/accent_neon"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_subtitle" />
+
+    <TextView
+        android:id="@+id/collection_loading_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Loading collection..."
+        android:textColor="@color/text_med_emp"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_loading_progress" />
+
+    <LinearLayout
+        android:id="@+id/collection_error_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_subtitle">
+
+        <TextView
+            android:id="@+id/collection_error_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Unable to load collection"
+            android:textColor="@color/status_error_soft"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/collection_retry_button"
+            style="@style/AppButton.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:minWidth="120dp"
+            android:text="Try Again" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/collection_empty_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="26dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_subtitle">
+
+        <ImageView
+            android:layout_width="62dp"
+            android:layout_height="62dp"
+            android:background="@drawable/bg_icon_circle"
+            android:contentDescription="No collection entries"
+            android:padding="14dp"
+            android:src="@drawable/ic_games"
+            android:tint="@color/accent_neon" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Your collection is empty"
+            android:textColor="@color/text_high_emp"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Add games from the detail screen and they will appear here."
+            android:textColor="@color/text_med_emp"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/collection_recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingBottom="14dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_subtitle"
+        tools:itemCount="3"
+        tools:listitem="@layout/item_collection_entry" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

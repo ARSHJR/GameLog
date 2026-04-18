@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_game_detail_screen"
+    android:padding="20dp"
+    tools:context=".CollectionGameDetailActivity">
+
+    <ImageButton
+        android:id="@+id/collection_detail_back_button"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:background="@drawable/bg_icon_circle_grey"
+        android:contentDescription="Back"
+        android:padding="10dp"
+        android:src="@drawable/ic_arrow_back"
+        android:tint="@color/text_high_emp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/collection_detail_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        style="@style/AppText.ScreenTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/collection_detail_back_button"
+        app:layout_constraintTop_toTopOf="@id/collection_detail_back_button"
+        tools:text="Cyberpunk 2077" />
+
+    <TextView
+        android:id="@+id/collection_detail_subtitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        style="@style/AppText.ScreenSubtitle"
+        app:layout_constraintEnd_toEndOf="@id/collection_detail_title"
+        app:layout_constraintStart_toStartOf="@id/collection_detail_title"
+        app:layout_constraintTop_toBottomOf="@id/collection_detail_title"
+        tools:text="Notes and reminders for this game" />
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/collection_detail_tab_group"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        app:selectionRequired="true"
+        app:singleSelection="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_detail_subtitle">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/collection_tab_notes"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Notes"
+            android:textAllCaps="false"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/accent_neon_soft"
+            app:strokeWidth="1dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/collection_tab_reminders"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Reminders"
+            android:textAllCaps="false"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/accent_neon_soft"
+            app:strokeWidth="1dp" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <ProgressBar
+        android:id="@+id/collection_detail_loading_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/accent_neon"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_detail_tab_group" />
+
+    <TextView
+        android:id="@+id/collection_detail_loading_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Loading entries..."
+        android:textColor="@color/text_med_emp"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_detail_loading_progress" />
+
+    <LinearLayout
+        android:id="@+id/collection_detail_error_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_detail_tab_group">
+
+        <TextView
+            android:id="@+id/collection_detail_error_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Unable to load entries"
+            android:textColor="@color/status_error_soft"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/collection_detail_retry_button"
+            style="@style/AppButton.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:minWidth="120dp"
+            android:text="Try Again" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/collection_detail_empty_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_detail_tab_group">
+
+        <ImageView
+            android:layout_width="62dp"
+            android:layout_height="62dp"
+            android:background="@drawable/bg_icon_circle"
+            android:contentDescription="Empty"
+            android:padding="14dp"
+            android:src="@drawable/ic_games"
+            android:tint="@color/accent_neon" />
+
+        <TextView
+            android:id="@+id/collection_detail_empty_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:textColor="@color/text_high_emp"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:text="No notes yet" />
+
+        <TextView
+            android:id="@+id/collection_detail_empty_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:textColor="@color/text_med_emp"
+            android:textSize="13sp"
+            tools:text="This collection entry does not have saved notes yet." />
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/collection_detail_recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="14dp"
+        android:clipToPadding="false"
+        android:paddingBottom="14dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_detail_tab_group"
+        tools:itemCount="4"
+        tools:listitem="@layout/item_collection_note" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/collection_detail_add_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:contentDescription="Add note or reminder"
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="@color/accent_neon"
+        app:tint="@color/text_high_emp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
