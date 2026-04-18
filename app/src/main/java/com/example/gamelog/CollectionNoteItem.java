@@ -17,6 +17,14 @@ public class CollectionNoteItem {
     @Nullable
     private String userGameId;
 
+    @SerializedName("game_id")
+    @Nullable
+    private String gameId;
+
+    @SerializedName("game_title")
+    @Nullable
+    private String gameTitle;
+
     @Nullable
     private String title;
 
@@ -90,6 +98,16 @@ public class CollectionNoteItem {
     @Nullable
     public String getUserGameId() {
         return userGameId;
+    }
+
+    @Nullable
+    public String getGameId() {
+        return gameId;
+    }
+
+    @Nullable
+    public String getGameTitle() {
+        return gameTitle;
     }
 
     @Nullable

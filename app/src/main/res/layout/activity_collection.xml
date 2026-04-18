@@ -41,6 +41,42 @@
         app:layout_constraintStart_toStartOf="@id/collection_header_title"
         app:layout_constraintTop_toBottomOf="@id/collection_header_title" />
 
+    <LinearLayout
+        android:id="@+id/collection_actions_row"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collection_subtitle">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Search collection">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/collection_search_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone"
+                android:maxLines="1"
+                android:textColor="@color/text_high_emp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/collection_add_button"
+            style="@style/AppButton.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:minWidth="0dp"
+            android:text="+ Add" />
+    </LinearLayout>
+
     <ProgressBar
         android:id="@+id/collection_loading_progress"
         android:layout_width="wrap_content"
@@ -50,7 +86,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/collection_subtitle" />
+        app:layout_constraintTop_toBottomOf="@id/collection_actions_row" />
 
     <TextView
         android:id="@+id/collection_loading_text"
@@ -76,7 +112,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/collection_subtitle">
+        app:layout_constraintTop_toBottomOf="@id/collection_actions_row">
 
         <TextView
             android:id="@+id/collection_error_text"
@@ -108,7 +144,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/collection_subtitle">
+        app:layout_constraintTop_toBottomOf="@id/collection_actions_row">
 
         <ImageView
             android:layout_width="62dp"
@@ -149,7 +185,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/collection_subtitle"
+        app:layout_constraintTop_toBottomOf="@id/collection_actions_row"
         tools:itemCount="3"
         tools:listitem="@layout/item_collection_entry" />
 

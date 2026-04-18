@@ -2,6 +2,7 @@ package com.example.gamelog;
 
 import java.util.List;
 import retrofit2.Call;
+import retrofit2.http.DELETE;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.PATCH;
@@ -53,6 +54,12 @@ public interface ApiService {
             @Query("limit") Integer limit
     );
 
+    @GET("/users/{userId}/notes")
+    Call<List<CollectionNoteItem>> getUserNotes(
+            @Path("userId") String userId,
+            @Query("type") String type
+    );
+
     @GET("/collection/{userGameId}/notes")
     Call<List<CollectionNoteItem>> getCollectionNotes(
             @Path("userGameId") String userGameId,
@@ -73,4 +80,7 @@ public interface ApiService {
             @Path("noteId") String noteId,
             @Body UpdateTaskStatusRequest request
     );
+
+        @DELETE("/notes/{noteId}")
+        Call<CollectionNoteItem> deleteNote(@Path("noteId") String noteId);
 }

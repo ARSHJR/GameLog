@@ -1,5 +1,6 @@
 package com.example.gamelog;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -11,7 +12,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -20,8 +26,12 @@ import retrofit2.Response;
 public class GameDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_GAME_ID = "extra_game_id";
+    public static final String EXTRA_USER_GAME_ID = "extra_user_game_id";
+    public static final String EXTRA_GAME_TITLE = "extra_game_title";
 
     private String gameId;
+    private String userGameId;
+    private String gameTitleHint;
     private String backendUserId;
 
     private ProgressBar loadingProgress;
@@ -40,12 +50,23 @@ public class GameDetailActivity extends AppCompatActivity {
     private TextView platformValue;
     private TextView actionStatusText;
     private ImageView heroImage;
+    private TextView heroCaption;
     private MaterialButton addToCollectionButton;
     private MaterialButton favouriteButton;
+
+    private View collectionNotesCard;
+    private TextView collectionNotesTitle;
+    private ProgressBar collectionNotesLoading;
+    private TextView collectionNotesError;
+    private TextView collectionNotesEmpty;
+    private RecyclerView collectionNotesRecycler;
+    private MaterialButton manageCollectionNotesButton;
+    private DetailNotesPreviewAdapter detailNotesPreviewAdapter;
 
     private boolean isCollectionRequestInFlight;
     private boolean isFavouriteRequestInFlight;
     private boolean isFavouriteSelected;
+    private boolean fromCollectionContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,12 +89,26 @@ public class GameDetailActivity extends AppCompatActivity {
         platformValue = findViewById(R.id.detail_platform_value);
         actionStatusText = findViewById(R.id.detail_action_status);
         heroImage = findViewById(R.id.detail_hero_image);
+        heroCaption = findViewById(R.id.detail_hero_caption);
         addToCollectionButton = findViewById(R.id.detail_add_collection_button);
         favouriteButton = findViewById(R.id.detail_favourite_button);
+        collectionNotesCard = findViewById(R.id.detail_collection_notes_card);
+        collectionNotesTitle = findViewById(R.id.detail_collection_notes_title);
+        collectionNotesLoading = findViewById(R.id.detail_collection_notes_loading);
+        collectionNotesError = findViewById(R.id.detail_collection_notes_error);
+        collectionNotesEmpty = findViewById(R.id.detail_collection_notes_empty);
+        collectionNotesRecycler = findViewById(R.id.detail_collection_notes_recycler);
+        manageCollectionNotesButton = findViewById(R.id.detail_manage_collection_notes_button);
+
+        collectionNotesRecycler.setLayoutManager(new LinearLayoutManager(this));
+        detailNotesPreviewAdapter = new DetailNotesPreviewAdapter(new ArrayList<>());
+        collectionNotesRecycler.setAdapter(detailNotesPreviewAdapter);
 
         findViewById(R.id.detail_back_button).setOnClickListener(v -> finish());
 
         gameId = getIntent().getStringExtra(EXTRA_GAME_ID);
+        userGameId = getIntent().getStringExtra(EXTRA_USER_GAME_ID);
+        gameTitleHint = getIntent().getStringExtra(EXTRA_GAME_TITLE);
         backendUserId = BackendUserHelper.getBackendUserId(this);
         if (TextUtils.isEmpty(gameId)) {
             showErrorState("Missing game id.");
@@ -86,12 +121,32 @@ public class GameDetailActivity extends AppCompatActivity {
         }
 
         retryButton.setOnClickListener(v -> fetchGameDetails());
+        manageCollectionNotesButton.setOnClickListener(v -> openCollectionNotesManager());
         addToCollectionButton.setOnClickListener(v -> addGameToCollection());
         favouriteButton.setOnClickListener(v -> toggleFavourite());
         updateActionButtonsState();
         updateFavouriteVisualState();
+        setupContextBehavior();
         setActionStatus("Ready", R.color.text_med_emp);
         fetchGameDetails();
+    }
+
+    private void setupContextBehavior() {
+        fromCollectionContext = !TextUtils.isEmpty(userGameId);
+        if (fromCollectionContext) {
+            addToCollectionButton.setText("In Collection");
+            addToCollectionButton.setEnabled(false);
+            addToCollectionButton.setAlpha(0.7f);
+
+            collectionNotesCard.setVisibility(View.VISIBLE);
+            collectionNotesTitle.setText("Collection notes & reminders");
+            if (!TextUtils.isEmpty(gameTitleHint)) {
+                heroCaption.setText(gameTitleHint);
+            }
+        } else {
+            collectionNotesCard.setVisibility(View.GONE);
+            heroCaption.setText("Game landing view");
+        }
     }
 
     private void fetchGameDetails() {
@@ -104,6 +159,9 @@ public class GameDetailActivity extends AppCompatActivity {
             public void onResponse(Call<GameApiItem> call, Response<GameApiItem> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     bindGame(response.body());
+                    if (!TextUtils.isEmpty(userGameId)) {
+                        fetchCollectionNotesPreview();
+                    }
                     showContentState();
                 } else {
                     showErrorState("Could not load game details.");
@@ -137,6 +195,56 @@ public class GameDetailActivity extends AppCompatActivity {
 
         // Placeholder hero while URL image loading is deferred to a later phase.
         heroImage.setImageResource(R.drawable.ic_games);
+
+        if (TextUtils.isEmpty(gameTitleHint)) {
+            heroCaption.setText(orFallback(game.getTitle(), "Game landing view"));
+        }
+    }
+
+    private void fetchCollectionNotesPreview() {
+        if (TextUtils.isEmpty(userGameId)) {
+            return;
+        }
+
+        showCollectionNotesLoading();
+
+        ApiService apiService = RetrofitClient.getApiService();
+        apiService.getCollectionNotes(userGameId, null).enqueue(new Callback<List<CollectionNoteItem>>() {
+            @Override
+            public void onResponse(Call<List<CollectionNoteItem>> call, Response<List<CollectionNoteItem>> response) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    showCollectionNotesError("Could not load collection notes/reminders.");
+                    return;
+                }
+
+                List<CollectionNoteItem> items = new ArrayList<>(response.body());
+                if (items.isEmpty()) {
+                    showCollectionNotesEmpty();
+                    return;
+                }
+
+                sortNotesPinnedFirst(items);
+                detailNotesPreviewAdapter.updateItems(items);
+                showCollectionNotesContent();
+            }
+
+            @Override
+            public void onFailure(Call<List<CollectionNoteItem>> call, Throwable t) {
+                showCollectionNotesError("Unable to load collection notes/reminders.");
+            }
+        });
+    }
+
+    private void openCollectionNotesManager() {
+        if (TextUtils.isEmpty(userGameId)) {
+            return;
+        }
+
+        Intent intent = new Intent(this, CollectionGameDetailActivity.class);
+        intent.putExtra(CollectionGameDetailActivity.EXTRA_USER_GAME_ID, userGameId);
+        intent.putExtra(CollectionGameDetailActivity.EXTRA_GAME_ID, gameId);
+        intent.putExtra(CollectionGameDetailActivity.EXTRA_GAME_TITLE, titleText.getText() != null ? titleText.getText().toString() : gameTitleHint);
+        startActivity(intent);
     }
 
     private void addGameToCollection() {
@@ -263,6 +371,39 @@ public class GameDetailActivity extends AppCompatActivity {
         errorText.setText(message);
     }
 
+    private void showCollectionNotesLoading() {
+        collectionNotesLoading.setVisibility(View.VISIBLE);
+        collectionNotesError.setVisibility(View.GONE);
+        collectionNotesEmpty.setVisibility(View.GONE);
+        collectionNotesRecycler.setVisibility(View.GONE);
+    }
+
+    private void showCollectionNotesError(String message) {
+        collectionNotesLoading.setVisibility(View.GONE);
+        collectionNotesEmpty.setVisibility(View.GONE);
+        collectionNotesRecycler.setVisibility(View.GONE);
+        collectionNotesError.setVisibility(View.VISIBLE);
+        collectionNotesError.setText(message);
+    }
+
+    private void showCollectionNotesEmpty() {
+        collectionNotesLoading.setVisibility(View.GONE);
+        collectionNotesError.setVisibility(View.GONE);
+        collectionNotesRecycler.setVisibility(View.GONE);
+        collectionNotesEmpty.setVisibility(View.VISIBLE);
+    }
+
+    private void showCollectionNotesContent() {
+        collectionNotesLoading.setVisibility(View.GONE);
+        collectionNotesError.setVisibility(View.GONE);
+        collectionNotesEmpty.setVisibility(View.GONE);
+        collectionNotesRecycler.setVisibility(View.VISIBLE);
+    }
+
+    private void sortNotesPinnedFirst(List<CollectionNoteItem> items) {
+        Collections.sort(items, Comparator.comparing(item -> !Boolean.TRUE.equals(item.getIsPinned())));
+    }
+
     private String joinGenres(List<String> genres) {
         StringBuilder builder = new StringBuilder();
         for (String genre : genres) {
@@ -285,10 +426,14 @@ public class GameDetailActivity extends AppCompatActivity {
     }
 
     private void updateActionButtonsState() {
-        addToCollectionButton.setEnabled(!isCollectionRequestInFlight);
+        addToCollectionButton.setEnabled(!fromCollectionContext && !isCollectionRequestInFlight);
         favouriteButton.setEnabled(!isFavouriteRequestInFlight);
 
-        addToCollectionButton.setAlpha(isCollectionRequestInFlight ? 0.7f : 1f);
+        if (fromCollectionContext) {
+            addToCollectionButton.setAlpha(0.7f);
+        } else {
+            addToCollectionButton.setAlpha(isCollectionRequestInFlight ? 0.7f : 1f);
+        }
         favouriteButton.setAlpha(isFavouriteRequestInFlight ? 0.7f : 1f);
     }
 

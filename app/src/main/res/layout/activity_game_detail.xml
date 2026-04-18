@@ -128,12 +128,40 @@
 
                         <ImageView
                             android:id="@+id/detail_hero_image"
-                            android:layout_width="64dp"
-                            android:layout_height="64dp"
-                            android:layout_gravity="center"
-                            android:contentDescription="Game cover placeholder"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:alpha="0.9"
+                            android:contentDescription="Game hero"
+                            android:scaleType="centerCrop"
                             android:src="@drawable/ic_games"
                             android:tint="@color/accent_cyan" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_hero_bottom_fade" />
+
+                        <ImageView
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="12dp"
+                            android:contentDescription="Game cover placeholder"
+                            android:src="@drawable/ic_games"
+                            android:tint="@color/text_high_emp" />
+
+                        <TextView
+                            android:id="@+id/detail_hero_caption"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="bottom"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginEnd="14dp"
+                            android:layout_marginBottom="12dp"
+                            android:text="Game landing view"
+                            android:textColor="@color/text_high_emp"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
                     </FrameLayout>
 
                     <TextView
@@ -331,6 +359,91 @@
                         android:textStyle="bold"
                         tools:text="PC" />
                 </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/detail_collection_notes_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/surface_card"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        android:id="@+id/detail_collection_notes_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Collection notes &amp; reminders"
+                        android:textColor="@color/text_high_emp"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/detail_collection_notes_subtitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Read-only preview for this collection entry"
+                        android:textColor="@color/text_med_emp"
+                        android:textSize="12sp" />
+
+                    <ProgressBar
+                        android:id="@+id/detail_collection_notes_loading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:indeterminateTint="@color/accent_neon"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/detail_collection_notes_error"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textColor="@color/status_error_soft"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/detail_collection_notes_empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="No notes or reminders yet for this collection entry."
+                        android:textColor="@color/text_med_emp"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/detail_collection_notes_recycler"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:nestedScrollingEnabled="false"
+                        android:visibility="gone"
+                        tools:itemCount="3"
+                        tools:listitem="@layout/item_detail_note_preview" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/detail_manage_collection_notes_button"
+                        style="@style/AppButton.Secondary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Manage Notes &amp; Reminders" />
+
+                </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>

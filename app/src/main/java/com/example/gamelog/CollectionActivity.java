@@ -2,7 +2,9 @@ package com.example.gamelog;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -13,6 +15,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -31,8 +36,11 @@ public class CollectionActivity extends AppCompatActivity {
     private TextView errorText;
     private Button retryButton;
     private View emptyContainer;
+    private TextInputEditText searchInput;
+    private MaterialButton addButton;
 
     private String backendUserId;
+    private final List<CollectionEntryItem> allCollectionEntries = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +54,11 @@ public class CollectionActivity extends AppCompatActivity {
         errorText = findViewById(R.id.collection_error_text);
         retryButton = findViewById(R.id.collection_retry_button);
         emptyContainer = findViewById(R.id.collection_empty_container);
+        searchInput = findViewById(R.id.collection_search_input);
+        addButton = findViewById(R.id.collection_add_button);
 
         findViewById(R.id.collection_back_button).setOnClickListener(v -> finish());
+        addButton.setOnClickListener(v -> startActivity(new Intent(CollectionActivity.this, ApiGamesActivity.class)));
 
         backendUserId = BackendUserHelper.getBackendUserId(this);
         if (TextUtils.isEmpty(backendUserId)) {
@@ -65,11 +76,28 @@ public class CollectionActivity extends AppCompatActivity {
                 return;
             }
 
-            Intent intent = new Intent(CollectionActivity.this, CollectionGameDetailActivity.class);
-            intent.putExtra(CollectionGameDetailActivity.EXTRA_USER_GAME_ID, item.getUserGameId());
-            intent.putExtra(CollectionGameDetailActivity.EXTRA_GAME_ID, item.getGameId());
-            intent.putExtra(CollectionGameDetailActivity.EXTRA_GAME_TITLE, item.getTitle());
+            Intent intent = new Intent(CollectionActivity.this, GameDetailActivity.class);
+            intent.putExtra(GameDetailActivity.EXTRA_USER_GAME_ID, item.getUserGameId());
+            intent.putExtra(GameDetailActivity.EXTRA_GAME_ID, item.getGameId());
+            intent.putExtra(GameDetailActivity.EXTRA_GAME_TITLE, item.getTitle());
             startActivity(intent);
+        });
+
+        searchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // no-op
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                applyCollectionFilter(s != null ? s.toString() : null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // no-op
+            }
         });
 
         retryButton.setOnClickListener(v -> fetchCollection());
@@ -91,13 +119,9 @@ public class CollectionActivity extends AppCompatActivity {
                 }
 
                 List<CollectionEntryItem> collectionEntries = response.body();
-                adapter.updateItems(collectionEntries);
-
-                if (collectionEntries.isEmpty()) {
-                    showEmptyState();
-                } else {
-                    showContentState();
-                }
+                allCollectionEntries.clear();
+                allCollectionEntries.addAll(collectionEntries);
+                applyCollectionFilter(searchInput.getText() != null ? searchInput.getText().toString() : null);
             }
 
             @Override
@@ -146,5 +170,24 @@ public class CollectionActivity extends AppCompatActivity {
         emptyContainer.setVisibility(View.GONE);
 
         recyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private void applyCollectionFilter(String rawQuery) {
+        String query = rawQuery == null ? "" : rawQuery.trim().toLowerCase(Locale.US);
+        List<CollectionEntryItem> filtered = new ArrayList<>();
+
+        for (CollectionEntryItem item : allCollectionEntries) {
+            String title = item.getTitle() == null ? "" : item.getTitle().trim().toLowerCase(Locale.US);
+            if (query.isEmpty() || title.contains(query)) {
+                filtered.add(item);
+            }
+        }
+
+        adapter.updateItems(filtered);
+        if (filtered.isEmpty()) {
+            showEmptyState();
+        } else {
+            showContentState();
+        }
     }
 }

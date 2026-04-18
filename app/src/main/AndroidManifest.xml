@@ -28,6 +28,7 @@
         </activity>
 
         <activity android:name=".LoginActivity" />
+        <activity android:name=".MainShellActivity" />
         <activity android:name=".DashboardActivity" />
         <activity android:name=".GamesActivity" />
         <activity android:name=".CollectionActivity" />

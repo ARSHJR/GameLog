@@ -519,6 +519,47 @@ app.get('/collection/:userGameId/notes', async (req, res) => {
   }
 });
 
+app.get('/users/:userId/notes', async (req, res) => {
+  const userId = req.params.userId;
+  const { type } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Invalid userId' });
+  }
+
+  if (type && !['note', 'reminder'].includes(type)) {
+    return res.status(400).json({ error: "type must be 'note' or 'reminder'" });
+  }
+
+  try {
+    const query = `
+      SELECT
+        gn.*,
+        ug.game_id,
+        g.title AS game_title,
+        gr.reminder_id,
+        gr.frequency,
+        gr.is_active,
+        gr.next_trigger_at,
+        gr.last_triggered_at,
+        gr.snoozed_until
+      FROM public.game_notes gn
+      JOIN public.user_games ug ON ug.user_game_id = gn.user_game_id
+      LEFT JOIN public.games g ON g.game_id = ug.game_id
+      LEFT JOIN public.game_reminders gr ON gr.note_id = gn.note_id
+      WHERE gn.user_id = $1
+        AND gn.is_deleted = false
+        AND ($2::note_type_enum IS NULL OR gn.note_type = $2::note_type_enum)
+      ORDER BY gn.is_pinned DESC, gn.pinned_at DESC NULLS LAST, gn.created_at DESC;
+    `;
+
+    const { rows } = await db.query(query, [userId, type || null]);
+    return res.json(rows);
+  } catch (error) {
+    return handleServerError(res, error);
+  }
+});
+
 app.patch('/notes/:noteId/pin', async (req, res) => {
   const noteId = req.params.noteId;
 
@@ -575,10 +616,43 @@ app.patch('/notes/:noteId/task-status', async (req, res) => {
         updated_at = NOW()
       WHERE note_id = $1
         AND note_type = 'reminder'
+        AND is_deleted = false
       RETURNING *;
     `;
 
     const { rows } = await db.query(query, [noteId, task_status]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Note not found' });
+    }
+
+    return res.json(rows[0]);
+  } catch (error) {
+    return handleServerError(res, error);
+  }
+});
+
+app.delete('/notes/:noteId', async (req, res) => {
+  const noteId = req.params.noteId;
+
+  if (!noteId) {
+    return res.status(400).json({ error: 'Invalid noteId' });
+  }
+
+  try {
+    const query = `
+      UPDATE public.game_notes
+      SET
+        is_deleted = true,
+        is_pinned = false,
+        pinned_at = NULL,
+        updated_at = NOW()
+      WHERE note_id = $1
+        AND is_deleted = false
+      RETURNING *;
+    `;
+
+    const { rows } = await db.query(query, [noteId]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Note not found' });

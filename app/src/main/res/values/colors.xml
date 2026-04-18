@@ -21,6 +21,8 @@
     <color name="status_error">#EF4444</color>         <!-- Subtle red for error -->
     <color name="status_error_soft">#F87171</color>
     <color name="card_stroke">#2242648F</color>
+    <color name="bottom_nav_item_unselected">#FF94A3B8</color>
+    <color name="bottom_nav_item_selected">#FF4D7CFF</color>
 
     <!-- Legacy Color Mappings (keeping names to avoid breaking layout inflation) -->
     <color name="app_background">#050A10</color>

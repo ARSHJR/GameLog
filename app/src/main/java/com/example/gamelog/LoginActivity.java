@@ -38,7 +38,7 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("GameLogPrefs", MODE_PRIVATE);
         boolean isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false);
         if (isLoggedIn && BackendUserHelper.hasStoredBackendUserId(this)) {
-            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+            startActivity(new Intent(LoginActivity.this, MainShellActivity.class));
             finish();
             return;
         }
@@ -127,7 +127,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 BackendUserHelper.persistBackendUserId(LoginActivity.this, response.body().getUserId());
 
-                startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+                startActivity(new Intent(LoginActivity.this, MainShellActivity.class));
                 finish();
             }
 
