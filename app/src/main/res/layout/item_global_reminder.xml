@@ -10,24 +10,12 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="12dp">
 
-        <ImageButton
-            android:id="@+id/global_reminder_toggle_button"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:background="@drawable/bg_icon_circle_grey"
-            android:contentDescription="Toggle reminder task status"
-            android:padding="8dp" />
-
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_weight="1"
             android:orientation="vertical">
 
             <LinearLayout
@@ -93,15 +81,43 @@
 
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/global_reminder_delete_button"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:background="@drawable/bg_icon_circle_grey"
-            android:contentDescription="Delete reminder"
-            android:padding="8dp"
-            android:src="@android:drawable/ic_menu_delete"
-            android:tint="@color/status_error_soft" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/global_reminder_pin_button"
+                style="@style/AppButton.ActionGlass.Pin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_action_pin"
+                android:text="Pin"
+                android:textAllCaps="false" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/global_reminder_complete_button"
+                style="@style/AppButton.ActionGlass.Complete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                app:icon="@drawable/ic_action_check"
+                android:text="Mark completed"
+                android:textAllCaps="false" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/global_reminder_delete_button"
+                style="@style/AppButton.ActionGlass.Delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                app:icon="@drawable/ic_action_delete"
+                android:text="Delete"
+                android:textAllCaps="false" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

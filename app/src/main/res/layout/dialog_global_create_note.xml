@@ -154,6 +154,26 @@
                     android:textColor="@color/text_med_emp"
                     android:textSize="12sp" />
 
+                <ImageView
+                    android:id="@+id/global_create_image_preview"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:layout_marginTop="8dp"
+                    android:adjustViewBounds="true"
+                    android:background="@drawable/bg_icon_circle_grey"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_games"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/global_create_remove_image_button"
+                    style="@style/AppButton.Secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Remove image"
+                    android:visibility="gone" />
+
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>

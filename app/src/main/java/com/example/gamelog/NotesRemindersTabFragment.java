@@ -1,6 +1,7 @@
 package com.example.gamelog;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,9 +56,14 @@ public class NotesRemindersTabFragment extends Fragment {
 
     private static final String TYPE_NOTE = "note";
     private static final String TYPE_REMINDER = "reminder";
+    public static final String ARG_FILTER_USER_GAME_ID = "arg_filter_user_game_id";
+    public static final String ARG_FILTER_GAME_TITLE = "arg_filter_game_title";
+    private static final int MAX_PINNED_REMINDERS = 2;
 
     private String selectedType = TYPE_NOTE;
     private String backendUserId;
+    private String filteredUserGameId;
+    private String filteredGameTitle;
     private boolean isCreateRequestInFlight;
 
     private ProgressBar loadingProgress;
@@ -82,13 +89,25 @@ public class NotesRemindersTabFragment extends Fragment {
     private AlertDialog activeCreateDialog;
     private TextView activeLocationStateText;
     private TextView activeImageStateText;
+    private ImageView activeImagePreview;
+    private MaterialButton activeRemoveImageButton;
     private Uri selectedImageUri;
     private Double selectedLatitude;
     private Double selectedLongitude;
     private ReminderFrequencyOption selectedFrequencyOption;
 
     private final Set<String> mutationInFlightNoteIds = new HashSet<>();
+    private final List<CollectionNoteItem> currentReminderItems = new ArrayList<>();
     private final List<ReminderFrequencyOption> reminderFrequencyOptions = buildReminderFrequencyOptions();
+
+    public static NotesRemindersTabFragment newInstance(@Nullable String userGameId, @Nullable String gameTitle) {
+        NotesRemindersTabFragment fragment = new NotesRemindersTabFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_FILTER_USER_GAME_ID, userGameId);
+        args.putString(ARG_FILTER_GAME_TITLE, gameTitle);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     private final ActivityResultLauncher<String> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
@@ -97,10 +116,7 @@ public class NotesRemindersTabFragment extends Fragment {
                 }
 
                 selectedImageUri = uri;
-                if (activeImageStateText != null) {
-                    String label = uri.getLastPathSegment();
-                    activeImageStateText.setText(TextUtils.isEmpty(label) ? "Selected" : "Selected: " + label);
-                }
+                updateActiveImagePreviewState();
             });
 
     private final ActivityResultLauncher<String> requestMediaPermissionLauncher =
@@ -192,7 +208,12 @@ public class NotesRemindersTabFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_notes_reminders_tab, container, false);
 
+        Bundle args = getArguments();
+        filteredUserGameId = args == null ? null : toNullableText(args.getString(ARG_FILTER_USER_GAME_ID));
+        filteredGameTitle = args == null ? null : toNullableText(args.getString(ARG_FILTER_GAME_TITLE));
+
         bindViews(root);
+        configureHeader(root);
         setupToggles(root);
         setupAdapters();
         setupActions(root);
@@ -206,6 +227,18 @@ public class NotesRemindersTabFragment extends Fragment {
 
         fetchSelectedType();
         return root;
+    }
+
+    private void configureHeader(View root) {
+        TextView subtitleView = root.findViewById(R.id.global_notes_subtitle);
+        if (isFilteredMode()) {
+            String gameTitle = TextUtils.isEmpty(filteredGameTitle) ? "selected game" : filteredGameTitle;
+            subtitleView.setText("Filtered to " + gameTitle + ".");
+        }
+    }
+
+    private boolean isFilteredMode() {
+        return !TextUtils.isEmpty(filteredUserGameId);
     }
 
     private void bindViews(View root) {
@@ -248,6 +281,17 @@ public class NotesRemindersTabFragment extends Fragment {
 
         notesAdapter = new GlobalNotesAdapter(new ArrayList<>());
         notesRecycler.setAdapter(notesAdapter);
+        notesAdapter.setOnNoteActionListener(new GlobalNotesAdapter.OnNoteActionListener() {
+            @Override
+            public void onNoteClicked(CollectionNoteItem item) {
+                openNoteReminderDetail(item);
+            }
+
+            @Override
+            public void onDeleteRequested(CollectionNoteItem item) {
+                deleteNote(item, "note");
+            }
+        });
 
         pendingAdapter = new GlobalRemindersAdapter(new ArrayList<>());
         completedAdapter = new GlobalRemindersAdapter(new ArrayList<>());
@@ -256,18 +300,25 @@ public class NotesRemindersTabFragment extends Fragment {
 
         GlobalRemindersAdapter.OnReminderActionListener reminderActionListener = new GlobalRemindersAdapter.OnReminderActionListener() {
             @Override
-            public void onToggleTaskStatus(CollectionNoteItem item, String nextStatus) {
+            public void onPinToggleRequested(CollectionNoteItem item, boolean nextPinned) {
+                toggleReminderPin(item, nextPinned);
+            }
+
+            @Override
+            public void onTaskStatusToggleRequested(CollectionNoteItem item, String nextStatus) {
                 toggleReminderStatus(item, nextStatus);
             }
 
             @Override
             public void onDeleteRequested(CollectionNoteItem item) {
-                deleteReminder(item);
+                deleteNote(item, "reminder");
             }
         };
 
         pendingAdapter.setOnReminderActionListener(reminderActionListener);
         completedAdapter.setOnReminderActionListener(reminderActionListener);
+        pendingAdapter.setOnReminderItemClickListener(this::openNoteReminderDetail);
+        completedAdapter.setOnReminderItemClickListener(this::openNoteReminderDetail);
     }
 
     private void setupActions(View root) {
@@ -283,6 +334,16 @@ public class NotesRemindersTabFragment extends Fragment {
         }
         if (TextUtils.isEmpty(backendUserId)) {
             Toast.makeText(requireContext(), "Missing user context.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (isFilteredMode()) {
+            showCreateDialogInternal(
+                    new ArrayList<>(),
+                    new HashMap<>(),
+                    filteredUserGameId,
+                    TextUtils.isEmpty(filteredGameTitle) ? "Selected game" : filteredGameTitle
+            );
             return;
         }
 
@@ -333,7 +394,7 @@ public class NotesRemindersTabFragment extends Fragment {
                 }
 
                 Map<String, String> collectionMap = buildCollectionGameToUserGameMap(response.body());
-                showCreateDialogInternal(options, collectionMap);
+                showCreateDialogInternal(options, collectionMap, null, null);
             }
 
             @Override
@@ -346,7 +407,10 @@ public class NotesRemindersTabFragment extends Fragment {
         });
     }
 
-    private void showCreateDialogInternal(List<GameSelectionOption> options, Map<String, String> prefetchedCollectionMap) {
+    private void showCreateDialogInternal(List<GameSelectionOption> options,
+                                          Map<String, String> prefetchedCollectionMap,
+                                          @Nullable String fixedUserGameId,
+                                          @Nullable String fixedGameTitle) {
         View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_global_create_note, null);
 
         MaterialButtonToggleGroup typeGroup = dialogView.findViewById(R.id.global_create_type_group);
@@ -356,6 +420,8 @@ public class NotesRemindersTabFragment extends Fragment {
         EditText titleInput = dialogView.findViewById(R.id.global_create_title);
         EditText noteTextInput = dialogView.findViewById(R.id.global_create_note_text);
         MaterialButton pickImageButton = dialogView.findViewById(R.id.global_create_pick_image_button);
+        ImageView imagePreview = dialogView.findViewById(R.id.global_create_image_preview);
+        MaterialButton removeImageButton = dialogView.findViewById(R.id.global_create_remove_image_button);
         TextView imageStateText = dialogView.findViewById(R.id.global_create_image_state);
         MaterialButton getLocationButton = dialogView.findViewById(R.id.global_create_get_location_button);
         TextView locationStateText = dialogView.findViewById(R.id.global_create_location_state);
@@ -420,26 +486,36 @@ public class NotesRemindersTabFragment extends Fragment {
         pickImageButton.setOnClickListener(v -> startImageSelectionFlow());
         getLocationButton.setOnClickListener(v -> startLocationFetchFlow());
 
+        final boolean isFixedMode = !TextUtils.isEmpty(fixedUserGameId);
         final Map<String, String> mutableCollectionMap = new HashMap<>(prefetchedCollectionMap);
         final GameSelectionOption[] selectedGame = new GameSelectionOption[1];
 
-        ArrayAdapter<GameSelectionOption> gameAdapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_dropdown_item_1line,
-                options
-        );
-        gameDropdown.setAdapter(gameAdapter);
-        gameDropdown.setOnClickListener(v -> gameDropdown.showDropDown());
-        gameDropdown.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) {
-                gameDropdown.showDropDown();
-            }
-        });
-        gameDropdown.setOnItemClickListener((parent, view, position, id) -> selectedGame[0] = gameAdapter.getItem(position));
+        ArrayAdapter<GameSelectionOption> gameAdapter = null;
+        if (!isFixedMode) {
+            gameAdapter = new ArrayAdapter<>(
+                    requireContext(),
+                    android.R.layout.simple_dropdown_item_1line,
+                    options
+            );
+            gameDropdown.setAdapter(gameAdapter);
+            gameDropdown.setOnClickListener(v -> gameDropdown.showDropDown());
+            gameDropdown.setOnFocusChangeListener((v, hasFocus) -> {
+                if (hasFocus) {
+                    gameDropdown.showDropDown();
+                }
+            });
+            ArrayAdapter<GameSelectionOption> finalGameAdapter = gameAdapter;
+            gameDropdown.setOnItemClickListener((parent, view, position, id) -> selectedGame[0] = finalGameAdapter.getItem(position));
 
-        if (!options.isEmpty()) {
-            selectedGame[0] = options.get(0);
-            gameDropdown.setText(options.get(0).toString(), false);
+            if (!options.isEmpty()) {
+                selectedGame[0] = options.get(0);
+                gameDropdown.setText(options.get(0).toString(), false);
+            }
+        } else {
+            gameDropdown.setText(TextUtils.isEmpty(fixedGameTitle) ? "Selected game" : fixedGameTitle, false);
+            gameDropdown.setEnabled(false);
+            gameDropdown.setFocusable(false);
+            gameDropdown.setClickable(false);
         }
 
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
@@ -448,11 +524,21 @@ public class NotesRemindersTabFragment extends Fragment {
                 .create();
         activeCreateDialog = dialog;
         activeImageStateText = imageStateText;
+        activeImagePreview = imagePreview;
+        activeRemoveImageButton = removeImageButton;
         activeLocationStateText = locationStateText;
+        updateActiveImagePreviewState();
+
+        removeImageButton.setOnClickListener(v -> {
+            selectedImageUri = null;
+            updateActiveImagePreviewState();
+        });
 
         dialog.setOnDismissListener(d -> {
             activeCreateDialog = null;
             activeImageStateText = null;
+            activeImagePreview = null;
+            activeRemoveImageButton = null;
             activeLocationStateText = null;
             selectedImageUri = null;
             selectedLatitude = null;
@@ -479,12 +565,6 @@ public class NotesRemindersTabFragment extends Fragment {
                 return;
             }
 
-            GameSelectionOption resolvedSelectedGame = resolveSelectedGame(options, gameDropdown.getText() != null ? gameDropdown.getText().toString() : null, selectedGame[0]);
-            if (resolvedSelectedGame == null || TextUtils.isEmpty(resolvedSelectedGame.getGameId())) {
-                showDialogError(feedbackText, "Please choose a game.");
-                return;
-            }
-
             String title = toNullableText(titleInput.getText() != null ? titleInput.getText().toString() : null);
             String noteText = toNullableText(noteTextInput.getText() != null ? noteTextInput.getText().toString() : null);
             String mediaUri = selectedImageUri != null ? selectedImageUri.toString() : null;
@@ -508,6 +588,22 @@ public class NotesRemindersTabFragment extends Fragment {
 
             hideDialogError(feedbackText);
             setDialogLoadingState(saveButton, cancelButton, true);
+
+            if (isFixedMode) {
+                createGlobalNoteOrReminder(dialog, saveButton, cancelButton, createType, fixedUserGameId,
+                        title, noteText, mediaUri, latitude, longitude,
+                        finalFrequencyOption, fixedGameTitle);
+                return;
+            }
+
+            GameSelectionOption resolvedSelectedGame = resolveSelectedGame(options,
+                    gameDropdown.getText() != null ? gameDropdown.getText().toString() : null,
+                    selectedGame[0]);
+            if (resolvedSelectedGame == null || TextUtils.isEmpty(resolvedSelectedGame.getGameId())) {
+                setDialogLoadingState(saveButton, cancelButton, false);
+                showDialogError(feedbackText, "Please choose a game.");
+                return;
+            }
 
             resolveUserGameIdForCreate(resolvedSelectedGame.getGameId(), mutableCollectionMap, new CollectionLookupCallback() {
                 @Override
@@ -885,6 +981,45 @@ public class NotesRemindersTabFragment extends Fragment {
         saveButton.setText(loading ? "Creating..." : "Create");
     }
 
+    private void updateActiveImagePreviewState() {
+        if (activeImageStateText == null || activeImagePreview == null || activeRemoveImageButton == null) {
+            return;
+        }
+
+        if (selectedImageUri == null) {
+            activeImageStateText.setText("Not set");
+            activeImagePreview.setVisibility(View.GONE);
+            activeRemoveImageButton.setVisibility(View.GONE);
+            return;
+        }
+
+        String label = selectedImageUri.getLastPathSegment();
+        activeImageStateText.setText(TextUtils.isEmpty(label) ? "Selected image" : "Selected: " + label);
+        activeImagePreview.setVisibility(View.VISIBLE);
+        activeRemoveImageButton.setVisibility(View.VISIBLE);
+        ImageLoader.loadCover(activeImagePreview, selectedImageUri.toString(), R.drawable.ic_games);
+    }
+
+    private void openNoteReminderDetail(CollectionNoteItem item) {
+        if (!isAdded() || item == null) {
+            return;
+        }
+
+        Intent intent = new Intent(requireContext(), NoteReminderDetailActivity.class);
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_TYPE, item.getNoteType());
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_TITLE, item.getTitle());
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_TEXT, item.getNoteText());
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_GAME_TITLE, item.getGameTitle());
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_MEDIA_URI, item.getMediaUri());
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_FREQUENCY, item.getFrequency());
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_NEXT_TRIGGER_AT, item.getNextTriggerAt());
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_STATUS, item.getTaskStatus());
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_CREATED_AT, item.getCreatedAt());
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_LATITUDE, item.getLatitude() == null ? null : String.valueOf(item.getLatitude()));
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_LONGITUDE, item.getLongitude() == null ? null : String.valueOf(item.getLongitude()));
+        startActivity(intent);
+    }
+
     private String resolveCreateType(int checkedId, int noteButtonId, int reminderButtonId) {
         if (checkedId == noteButtonId) {
             return TYPE_NOTE;
@@ -934,7 +1069,11 @@ public class NotesRemindersTabFragment extends Fragment {
         showLoadingState();
 
         ApiService apiService = RetrofitClient.getApiService();
-        apiService.getUserNotes(backendUserId, selectedType).enqueue(new Callback<List<CollectionNoteItem>>() {
+        Call<List<CollectionNoteItem>> requestCall = isFilteredMode()
+                ? apiService.getCollectionNotes(filteredUserGameId, selectedType)
+                : apiService.getUserNotes(backendUserId, selectedType);
+
+        requestCall.enqueue(new Callback<List<CollectionNoteItem>>() {
             @Override
             public void onResponse(Call<List<CollectionNoteItem>> call, Response<List<CollectionNoteItem>> response) {
                 if (!isAdded()) {
@@ -948,8 +1087,8 @@ public class NotesRemindersTabFragment extends Fragment {
                 List<CollectionNoteItem> items = response.body();
                 if (items.isEmpty()) {
                     showEmptyState(TYPE_REMINDER.equals(selectedType)
-                            ? "No reminders found across your collection."
-                            : "No notes found across your collection.");
+                            ? (isFilteredMode() ? "No reminders found for this game." : "No reminders found across your collection.")
+                            : (isFilteredMode() ? "No notes found for this game." : "No notes found across your collection."));
                     return;
                 }
 
@@ -972,6 +1111,7 @@ public class NotesRemindersTabFragment extends Fragment {
     }
 
     private void bindNotes(List<CollectionNoteItem> notes) {
+        currentReminderItems.clear();
         notesAdapter.updateItems(notes);
 
         notesRecycler.setVisibility(View.VISIBLE);
@@ -982,6 +1122,9 @@ public class NotesRemindersTabFragment extends Fragment {
     }
 
     private void bindReminders(List<CollectionNoteItem> reminders) {
+        currentReminderItems.clear();
+        currentReminderItems.addAll(reminders);
+
         List<CollectionNoteItem> pending = new ArrayList<>();
         List<CollectionNoteItem> completed = new ArrayList<>();
 
@@ -1006,6 +1149,66 @@ public class NotesRemindersTabFragment extends Fragment {
 
         completedHeader.setVisibility(View.VISIBLE);
         completedRecycler.setVisibility(completed.isEmpty() ? View.GONE : View.VISIBLE);
+    }
+
+    private void toggleReminderPin(CollectionNoteItem item, boolean nextPinned) {
+        String noteId = item != null ? item.getNoteId() : null;
+        if (TextUtils.isEmpty(noteId) || mutationInFlightNoteIds.contains(noteId)) {
+            return;
+        }
+
+        if (nextPinned && countPinnedReminders() >= MAX_PINNED_REMINDERS) {
+            Toast.makeText(requireContext(), "You can pin up to 2 reminders.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        mutationInFlightNoteIds.add(noteId);
+        pendingAdapter.setMutationInFlightIds(mutationInFlightNoteIds);
+        completedAdapter.setMutationInFlightIds(mutationInFlightNoteIds);
+
+        ApiService apiService = RetrofitClient.getApiService();
+        apiService.toggleNotePin(noteId).enqueue(new Callback<CollectionNoteItem>() {
+            @Override
+            public void onResponse(Call<CollectionNoteItem> call, Response<CollectionNoteItem> response) {
+                if (!isAdded()) {
+                    return;
+                }
+
+                mutationInFlightNoteIds.remove(noteId);
+                pendingAdapter.setMutationInFlightIds(mutationInFlightNoteIds);
+                completedAdapter.setMutationInFlightIds(mutationInFlightNoteIds);
+
+                if (!response.isSuccessful()) {
+                    Toast.makeText(requireContext(), "Failed to update reminder pin.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Toast.makeText(requireContext(), nextPinned ? "Reminder pinned" : "Reminder unpinned", Toast.LENGTH_SHORT).show();
+                fetchSelectedType();
+            }
+
+            @Override
+            public void onFailure(Call<CollectionNoteItem> call, Throwable t) {
+                if (!isAdded()) {
+                    return;
+                }
+
+                mutationInFlightNoteIds.remove(noteId);
+                pendingAdapter.setMutationInFlightIds(mutationInFlightNoteIds);
+                completedAdapter.setMutationInFlightIds(mutationInFlightNoteIds);
+                Toast.makeText(requireContext(), "Failed to update reminder pin: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private int countPinnedReminders() {
+        int pinnedCount = 0;
+        for (CollectionNoteItem item : currentReminderItems) {
+            if (Boolean.TRUE.equals(item.getIsPinned())) {
+                pinnedCount++;
+            }
+        }
+        return pinnedCount;
     }
 
     private void toggleReminderStatus(CollectionNoteItem item, String nextStatus) {
@@ -1052,7 +1255,7 @@ public class NotesRemindersTabFragment extends Fragment {
         });
     }
 
-    private void deleteReminder(CollectionNoteItem item) {
+    private void deleteNote(CollectionNoteItem item, String typeLabel) {
         String noteId = item != null ? item.getNoteId() : null;
         if (TextUtils.isEmpty(noteId) || mutationInFlightNoteIds.contains(noteId)) {
             return;
@@ -1075,11 +1278,11 @@ public class NotesRemindersTabFragment extends Fragment {
                 completedAdapter.setMutationInFlightIds(mutationInFlightNoteIds);
 
                 if (!response.isSuccessful()) {
-                    Toast.makeText(requireContext(), "Failed to delete reminder", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Failed to delete " + typeLabel, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                Toast.makeText(requireContext(), "Reminder deleted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), Character.toUpperCase(typeLabel.charAt(0)) + typeLabel.substring(1) + " deleted", Toast.LENGTH_SHORT).show();
                 fetchSelectedType();
             }
 
@@ -1092,7 +1295,7 @@ public class NotesRemindersTabFragment extends Fragment {
                 mutationInFlightNoteIds.remove(noteId);
                 pendingAdapter.setMutationInFlightIds(mutationInFlightNoteIds);
                 completedAdapter.setMutationInFlightIds(mutationInFlightNoteIds);
-                Toast.makeText(requireContext(), "Failed to delete reminder: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Failed to delete " + typeLabel + ": " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

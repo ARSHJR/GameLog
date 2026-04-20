@@ -1,5 +1,9 @@
 package com.example.gamelog;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -12,7 +16,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
@@ -61,8 +71,12 @@ public class UserTabFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.activity_profile, container, false);
 
+        applyHeaderInsets(root.findViewById(R.id.profile_header_container));
+
         ImageButton backButton = root.findViewById(R.id.profile_back_button);
         backButton.setVisibility(View.GONE);
+        ImageButton settingsButton = root.findViewById(R.id.profile_settings_button);
+        settingsButton.setOnClickListener(v -> startActivity(new Intent(requireContext(), SettingsActivity.class)));
 
         loadingProgress = root.findViewById(R.id.profile_loading_progress);
         loadingText = root.findViewById(R.id.profile_loading_text);
@@ -89,6 +103,7 @@ public class UserTabFragment extends Fragment {
         activityEmptyContainer = root.findViewById(R.id.profile_activity_empty_container);
         activitySectionErrorText = root.findViewById(R.id.profile_activity_error_text);
         activityRetryButton = root.findViewById(R.id.profile_activity_retry_button);
+        Button signOutButton = root.findViewById(R.id.profile_sign_out_button);
 
         activityRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         activityAdapter = new UserActivityAdapter(new ArrayList<>());
@@ -96,6 +111,7 @@ public class UserTabFragment extends Fragment {
 
         retryButton.setOnClickListener(v -> fetchProfileAndActivity());
         activityRetryButton.setOnClickListener(v -> fetchActivityOnly());
+        signOutButton.setOnClickListener(v -> performSignOut());
 
         backendUserId = BackendUserHelper.getBackendUserId(requireContext());
         if (TextUtils.isEmpty(backendUserId)) {
@@ -260,5 +276,49 @@ public class UserTabFragment extends Fragment {
     private String extractInitial(String name) {
         String safeName = fallback(name, "Player").trim();
         return safeName.isEmpty() ? "P" : safeName.substring(0, 1).toUpperCase(Locale.US);
+    }
+
+    private void performSignOut() {
+        if (!isAdded()) {
+            return;
+        }
+
+        FirebaseAuth.getInstance().signOut();
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(requireContext(), gso);
+
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("GameLogPrefs", MODE_PRIVATE);
+        sharedPreferences.edit().clear().apply();
+        BackendUserHelper.clearBackendUserId(requireContext());
+
+        googleSignInClient.signOut().addOnCompleteListener(requireActivity(), task -> {
+            Intent intent = new Intent(requireContext(), LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            requireActivity().finish();
+        });
+    }
+
+    private void applyHeaderInsets(View headerContainer) {
+        if (headerContainer == null) {
+            return;
+        }
+
+        final int baseTopPadding = headerContainer.getPaddingTop();
+        ViewCompat.setOnApplyWindowInsetsListener(headerContainer, (view, insets) -> {
+            int statusBarTop = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            view.setPadding(
+                    view.getPaddingLeft(),
+                    baseTopPadding + statusBarTop,
+                    view.getPaddingRight(),
+                    view.getPaddingBottom()
+            );
+            return insets;
+        });
+        ViewCompat.requestApplyInsets(headerContainer);
     }
 }

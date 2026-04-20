@@ -4,10 +4,10 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.button.MaterialButton;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -18,10 +18,16 @@ public class GlobalRemindersAdapter extends RecyclerView.Adapter<GlobalReminders
     private final List<CollectionNoteItem> items;
     private final Set<String> mutationInFlightIds = new HashSet<>();
     private OnReminderActionListener actionListener;
+    private OnReminderItemClickListener itemClickListener;
 
     public interface OnReminderActionListener {
-        void onToggleTaskStatus(CollectionNoteItem item, String nextStatus);
+        void onPinToggleRequested(CollectionNoteItem item, boolean nextPinned);
+        void onTaskStatusToggleRequested(CollectionNoteItem item, String nextStatus);
         void onDeleteRequested(CollectionNoteItem item);
+    }
+
+    public interface OnReminderItemClickListener {
+        void onReminderClicked(CollectionNoteItem item);
     }
 
     public GlobalRemindersAdapter(List<CollectionNoteItem> items) {
@@ -30,6 +36,10 @@ public class GlobalRemindersAdapter extends RecyclerView.Adapter<GlobalReminders
 
     public void setOnReminderActionListener(OnReminderActionListener actionListener) {
         this.actionListener = actionListener;
+    }
+
+    public void setOnReminderItemClickListener(OnReminderItemClickListener itemClickListener) {
+        this.itemClickListener = itemClickListener;
     }
 
     public void updateItems(List<CollectionNoteItem> updatedItems) {
@@ -59,7 +69,7 @@ public class GlobalRemindersAdapter extends RecyclerView.Adapter<GlobalReminders
     public void onBindViewHolder(@NonNull ReminderViewHolder holder, int position) {
         CollectionNoteItem item = items.get(position);
         boolean inFlight = item.getNoteId() != null && mutationInFlightIds.contains(item.getNoteId());
-        holder.bind(item, inFlight, actionListener);
+        holder.bind(item, inFlight, actionListener, itemClickListener);
     }
 
     @Override
@@ -69,8 +79,9 @@ public class GlobalRemindersAdapter extends RecyclerView.Adapter<GlobalReminders
 
     static class ReminderViewHolder extends RecyclerView.ViewHolder {
 
-        private final ImageButton toggleButton;
-        private final ImageButton deleteButton;
+        private final MaterialButton pinButton;
+        private final MaterialButton completeButton;
+        private final MaterialButton deleteButton;
         private final TextView title;
         private final TextView body;
         private final TextView gameTitle;
@@ -79,7 +90,8 @@ public class GlobalRemindersAdapter extends RecyclerView.Adapter<GlobalReminders
 
         ReminderViewHolder(@NonNull View itemView) {
             super(itemView);
-            toggleButton = itemView.findViewById(R.id.global_reminder_toggle_button);
+            pinButton = itemView.findViewById(R.id.global_reminder_pin_button);
+            completeButton = itemView.findViewById(R.id.global_reminder_complete_button);
             deleteButton = itemView.findViewById(R.id.global_reminder_delete_button);
             title = itemView.findViewById(R.id.global_reminder_title);
             body = itemView.findViewById(R.id.global_reminder_body);
@@ -88,7 +100,10 @@ public class GlobalRemindersAdapter extends RecyclerView.Adapter<GlobalReminders
             statusBadge = itemView.findViewById(R.id.global_reminder_status_badge);
         }
 
-        void bind(CollectionNoteItem item, boolean inFlight, OnReminderActionListener actionListener) {
+        void bind(CollectionNoteItem item,
+              boolean inFlight,
+              OnReminderActionListener actionListener,
+              OnReminderItemClickListener itemClickListener) {
             String normalizedStatus = orBlank(item.getTaskStatus()).trim().toLowerCase();
             boolean isCompleted = "completed".equals(normalizedStatus);
             String nextStatus = isCompleted ? "pending" : "completed";
@@ -98,18 +113,30 @@ public class GlobalRemindersAdapter extends RecyclerView.Adapter<GlobalReminders
             gameTitle.setText("Game: " + orFallback(item.getGameTitle(), "Unknown game"));
 
             boolean pinned = Boolean.TRUE.equals(item.getIsPinned());
+            boolean nextPinned = !pinned;
             pinnedBadge.setVisibility(pinned ? View.VISIBLE : View.GONE);
+            pinButton.setText(pinned ? "Unpin" : "Pin");
 
             statusBadge.setText(isCompleted ? "COMPLETED" : "PENDING");
             statusBadge.setBackgroundResource(isCompleted ? R.drawable.bg_completed_badge : R.drawable.bg_pending_badge);
             statusBadge.setTextColor(itemView.getContext().getColor(isCompleted ? R.color.status_success : R.color.accent_neon));
+            completeButton.setText(isCompleted ? "Mark pending" : "Mark completed");
 
-            toggleButton.setImageResource(isCompleted ? android.R.drawable.checkbox_on_background : android.R.drawable.checkbox_off_background);
-            toggleButton.setEnabled(!inFlight && !TextUtils.isEmpty(orBlank(item.getNoteId())));
-            toggleButton.setAlpha(toggleButton.isEnabled() ? 1f : 0.6f);
-            toggleButton.setOnClickListener(v -> {
+            boolean canMutate = !inFlight && !TextUtils.isEmpty(orBlank(item.getNoteId()));
+
+            pinButton.setEnabled(canMutate);
+            pinButton.setAlpha(canMutate ? 1f : 0.6f);
+            pinButton.setOnClickListener(v -> {
                 if (actionListener != null && !TextUtils.isEmpty(orBlank(item.getNoteId()))) {
-                    actionListener.onToggleTaskStatus(item, nextStatus);
+                    actionListener.onPinToggleRequested(item, nextPinned);
+                }
+            });
+
+            completeButton.setEnabled(canMutate);
+            completeButton.setAlpha(canMutate ? 1f : 0.6f);
+            completeButton.setOnClickListener(v -> {
+                if (actionListener != null && !TextUtils.isEmpty(orBlank(item.getNoteId()))) {
+                    actionListener.onTaskStatusToggleRequested(item, nextStatus);
                 }
             });
 
@@ -118,6 +145,12 @@ public class GlobalRemindersAdapter extends RecyclerView.Adapter<GlobalReminders
             deleteButton.setOnClickListener(v -> {
                 if (actionListener != null) {
                     actionListener.onDeleteRequested(item);
+                }
+            });
+
+            itemView.setOnClickListener(v -> {
+                if (itemClickListener != null) {
+                    itemClickListener.onReminderClicked(item);
                 }
             });
         }

@@ -5,130 +5,121 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_primary"
-    tools:context=".LoginActivity"
-    android:padding="24dp">
+    android:padding="24dp"
+    tools:context=".SignUpActivity">
 
-    <!-- Redesigned header/brand area -->
     <ImageView
-        android:id="@+id/back_button"
+        android:id="@+id/sign_up_back_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:contentDescription="Back"
         android:src="@drawable/ic_arrow_back"
-        app:tint="@color/text_med_emp"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:contentDescription="Back" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/text_med_emp" />
 
     <TextView
-        android:id="@+id/sign_in_title"
+        android:id="@+id/sign_up_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="GAMELOG"
-        android:textColor="@color/accent_neon"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:letterSpacing="0.2"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-        android:id="@+id/welcome_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Welcome back"
+        android:layout_marginTop="56dp"
+        android:text="Create account"
         android:textColor="@color/text_high_emp"
         android:textSize="36sp"
         android:textStyle="bold"
-        android:layout_marginTop="56dp"
-        app:layout_constraintTop_toBottomOf="@id/sign_in_title"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sign_up_back_button" />
 
     <TextView
-        android:id="@+id/credentials_subtitle"
+        android:id="@+id/sign_up_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sign in to continue your gaming journal"
+        android:text="Sign up to start your game log"
         android:textColor="@color/text_med_emp"
         android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/welcome_title"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sign_up_title" />
 
-    <!-- Redesigned inputs using global styles -->
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/email_layout"
+        android:id="@+id/sign_up_email_layout"
         style="@style/AppInput.Outlined"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/credentials_subtitle"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="32dp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="40dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sign_up_subtitle"
         app:startIconDrawable="@drawable/ic_email"
         app:startIconTint="@color/text_med_emp">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/email_input"
+            android:id="@+id/sign_up_email_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Email address"
             android:inputType="textEmailAddress"
-            android:textColor="@color/text_high_emp"
-            android:fontFamily="sans-serif-medium"/>
+            android:textColor="@color/text_high_emp" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/password_layout"
+        android:id="@+id/sign_up_password_layout"
         style="@style/AppInput.Outlined"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/email_layout"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp"
-        app:passwordToggleEnabled="true"
-        app:passwordToggleTint="@color/text_med_emp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sign_up_email_layout"
         app:startIconDrawable="@drawable/ic_lock"
         app:startIconTint="@color/text_med_emp">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/password_input"
+            android:id="@+id/sign_up_password_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Password"
             android:inputType="textPassword"
-            android:textColor="@color/text_high_emp"
-            android:fontFamily="sans-serif-medium"/>
+            android:textColor="@color/text_high_emp" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
-        android:id="@+id/forgot_password"
-        android:layout_width="wrap_content"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/sign_up_confirm_password_layout"
+        style="@style/AppInput.Outlined"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Forgot password?"
-        android:textColor="@color/accent_neon"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/password_layout"
+        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sign_up_password_layout"
+        app:startIconDrawable="@drawable/ic_lock"
+        app:startIconTint="@color/text_med_emp">
 
-    <!-- Polished buttons using global styles -->
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/sign_up_confirm_password_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Confirm password"
+            android:inputType="textPassword"
+            android:textColor="@color/text_high_emp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/login_button"
+        android:id="@+id/sign_up_submit_button"
         style="@style/AppButton.Primary"
         android:layout_width="0dp"
         android:layout_height="64dp"
-        android:text="Sign In"
-        app:layout_constraintTop_toBottomOf="@id/forgot_password"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="24dp"
+        android:text="Sign Up"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sign_up_confirm_password_layout" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnGoogleSignIn"
+        android:id="@+id/sign_up_google_button"
         style="@style/AppButton.Secondary"
         android:layout_width="0dp"
         android:layout_height="64dp"
+        android:layout_marginTop="14dp"
         android:text="Continue with Google"
         android:textAllCaps="false"
         android:textColor="@color/text_high_emp"
@@ -136,23 +127,21 @@
         app:iconGravity="textStart"
         app:iconTint="@android:color/transparent"
         app:iconTintMode="src_over"
-        app:layout_constraintTop_toBottomOf="@id/login_button"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        android:fontFamily="sans-serif-medium"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sign_up_submit_button" />
 
     <TextView
-        android:id="@+id/sign_up_link"
+        android:id="@+id/sign_in_link"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:text="Don\'t have an account? Sign up"
+        android:layout_marginTop="16dp"
+        android:text="Already have an account? Sign in"
         android:textColor="@color/accent_neon"
         android:textSize="13sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnGoogleSignIn" />
+        app:layout_constraintTop_toBottomOf="@id/sign_up_google_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

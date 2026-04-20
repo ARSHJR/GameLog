@@ -7,12 +7,19 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.button.MaterialButton;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GlobalNotesAdapter extends RecyclerView.Adapter<GlobalNotesAdapter.NoteViewHolder> {
 
     private final List<CollectionNoteItem> items;
+    private OnNoteActionListener noteActionListener;
+
+    public interface OnNoteActionListener {
+        void onNoteClicked(CollectionNoteItem item);
+        void onDeleteRequested(CollectionNoteItem item);
+    }
 
     public GlobalNotesAdapter(List<CollectionNoteItem> items) {
         this.items = items != null ? items : new ArrayList<>();
@@ -26,6 +33,10 @@ public class GlobalNotesAdapter extends RecyclerView.Adapter<GlobalNotesAdapter.
         notifyDataSetChanged();
     }
 
+    public void setOnNoteActionListener(OnNoteActionListener noteActionListener) {
+        this.noteActionListener = noteActionListener;
+    }
+
     @NonNull
     @Override
     public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -35,7 +46,7 @@ public class GlobalNotesAdapter extends RecyclerView.Adapter<GlobalNotesAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull NoteViewHolder holder, int position) {
-        holder.bind(items.get(position));
+        holder.bind(items.get(position), noteActionListener);
     }
 
     @Override
@@ -48,25 +59,22 @@ public class GlobalNotesAdapter extends RecyclerView.Adapter<GlobalNotesAdapter.
         private final TextView title;
         private final TextView body;
         private final TextView gameTitle;
-        private final TextView pinnedBadge;
         private final TextView metadata;
+        private final MaterialButton deleteButton;
 
         NoteViewHolder(@NonNull View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.global_note_title);
             body = itemView.findViewById(R.id.global_note_body);
             gameTitle = itemView.findViewById(R.id.global_note_game_title);
-            pinnedBadge = itemView.findViewById(R.id.global_note_pinned_badge);
             metadata = itemView.findViewById(R.id.global_note_metadata);
+            deleteButton = itemView.findViewById(R.id.global_note_delete_button);
         }
 
-        void bind(CollectionNoteItem item) {
+        void bind(CollectionNoteItem item, OnNoteActionListener noteActionListener) {
             title.setText(orFallback(item.getTitle(), "Untitled note"));
             body.setText(orFallback(item.getNoteText(), "No content available."));
             gameTitle.setText("Game: " + orFallback(item.getGameTitle(), "Unknown game"));
-
-            boolean pinned = Boolean.TRUE.equals(item.getIsPinned());
-            pinnedBadge.setVisibility(pinned ? View.VISIBLE : View.GONE);
 
             StringBuilder builder = new StringBuilder();
             if (!TextUtils.isEmpty(orBlank(item.getCreatedAt()))) {
@@ -79,6 +87,18 @@ public class GlobalNotesAdapter extends RecyclerView.Adapter<GlobalNotesAdapter.
                 builder.append("Has media");
             }
             metadata.setText(builder.length() > 0 ? builder.toString() : "No metadata available");
+
+            deleteButton.setOnClickListener(v -> {
+                if (noteActionListener != null) {
+                    noteActionListener.onDeleteRequested(item);
+                }
+            });
+
+            itemView.setOnClickListener(v -> {
+                if (noteActionListener != null) {
+                    noteActionListener.onNoteClicked(item);
+                }
+            });
         }
 
         private static String orBlank(String value) {

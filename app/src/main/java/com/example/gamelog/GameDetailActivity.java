@@ -240,10 +240,9 @@ public class GameDetailActivity extends AppCompatActivity {
             return;
         }
 
-        Intent intent = new Intent(this, CollectionGameDetailActivity.class);
-        intent.putExtra(CollectionGameDetailActivity.EXTRA_USER_GAME_ID, userGameId);
-        intent.putExtra(CollectionGameDetailActivity.EXTRA_GAME_ID, gameId);
-        intent.putExtra(CollectionGameDetailActivity.EXTRA_GAME_TITLE, titleText.getText() != null ? titleText.getText().toString() : gameTitleHint);
+        Intent intent = new Intent(this, GameNotesRemindersActivity.class);
+        intent.putExtra(GameNotesRemindersActivity.EXTRA_USER_GAME_ID, userGameId);
+        intent.putExtra(GameNotesRemindersActivity.EXTRA_GAME_TITLE, titleText.getText() != null ? titleText.getText().toString() : gameTitleHint);
         startActivity(intent);
     }
 

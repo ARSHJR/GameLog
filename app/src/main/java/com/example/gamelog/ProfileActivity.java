@@ -1,5 +1,7 @@
 package com.example.gamelog;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -9,8 +11,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -57,8 +65,12 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        applyHeaderInsets(findViewById(R.id.profile_header_container));
+
         ImageButton backButton = findViewById(R.id.profile_back_button);
         backButton.setOnClickListener(v -> finish());
+        ImageButton settingsButton = findViewById(R.id.profile_settings_button);
+        settingsButton.setOnClickListener(v -> startActivity(new Intent(ProfileActivity.this, SettingsActivity.class)));
 
         loadingProgress = findViewById(R.id.profile_loading_progress);
         loadingText = findViewById(R.id.profile_loading_text);
@@ -85,6 +97,7 @@ public class ProfileActivity extends AppCompatActivity {
         activityEmptyContainer = findViewById(R.id.profile_activity_empty_container);
         activitySectionErrorText = findViewById(R.id.profile_activity_error_text);
         activityRetryButton = findViewById(R.id.profile_activity_retry_button);
+        Button signOutButton = findViewById(R.id.profile_sign_out_button);
 
         activityRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         activityAdapter = new UserActivityAdapter(new ArrayList<>());
@@ -92,6 +105,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         retryButton.setOnClickListener(v -> fetchProfileAndActivity());
         activityRetryButton.setOnClickListener(v -> fetchActivityOnly());
+        signOutButton.setOnClickListener(v -> performSignOut());
 
         backendUserId = BackendUserHelper.getBackendUserId(this);
         if (TextUtils.isEmpty(backendUserId)) {
@@ -243,5 +257,45 @@ public class ProfileActivity extends AppCompatActivity {
     private String extractInitial(String name) {
         String safeName = fallback(name, "Player").trim();
         return safeName.isEmpty() ? "P" : safeName.substring(0, 1).toUpperCase(Locale.US);
+    }
+
+    private void performSignOut() {
+        FirebaseAuth.getInstance().signOut();
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("GameLogPrefs", MODE_PRIVATE);
+        sharedPreferences.edit().clear().apply();
+        BackendUserHelper.clearBackendUserId(this);
+
+        googleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
+    }
+
+    private void applyHeaderInsets(View headerContainer) {
+        if (headerContainer == null) {
+            return;
+        }
+
+        final int baseTopPadding = headerContainer.getPaddingTop();
+        ViewCompat.setOnApplyWindowInsetsListener(headerContainer, (view, insets) -> {
+            int statusBarTop = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            view.setPadding(
+                    view.getPaddingLeft(),
+                    baseTopPadding + statusBarTop,
+                    view.getPaddingRight(),
+                    view.getPaddingBottom()
+            );
+            return insets;
+        });
+        ViewCompat.requestApplyInsets(headerContainer);
     }
 }

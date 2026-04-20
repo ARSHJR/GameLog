@@ -4,7 +4,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -29,6 +30,8 @@ public class LoginActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 9001;
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
+    private EditText emailInput;
+    private EditText passwordInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,8 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
+        emailInput = findViewById(R.id.email_input);
+        passwordInput = findViewById(R.id.password_input);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
@@ -61,8 +66,10 @@ public class LoginActivity extends AppCompatActivity {
 
         findViewById(R.id.btnGoogleSignIn).setOnClickListener(v -> signIn());
         findViewById(R.id.login_button).setOnClickListener(v -> {
-            signIn();
+            signInWithEmailPassword();
         });
+        TextView signUpLink = findViewById(R.id.sign_up_link);
+        signUpLink.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, SignUpActivity.class)));
     }
 
     private void signIn() {
@@ -136,6 +143,31 @@ public class LoginActivity extends AppCompatActivity {
                 handleBackendIdentityFailure("Unable to resolve backend account.");
             }
         });
+    }
+
+    private void signInWithEmailPassword() {
+        String email = emailInput.getText() != null ? emailInput.getText().toString().trim() : "";
+        String password = passwordInput.getText() != null ? passwordInput.getText().toString() : "";
+
+        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
+            Toast.makeText(this, "Enter email and password to sign in.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (!task.isSuccessful()) {
+                        Toast.makeText(LoginActivity.this, "Sign in failed.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    FirebaseUser currentUser = mAuth.getCurrentUser();
+                    if (currentUser == null) {
+                        Toast.makeText(LoginActivity.this, "Authentication failed. Please try again.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    resolveAndPersistBackendUser(currentUser);
+                });
     }
 
     private void handleBackendIdentityFailure(String message) {
