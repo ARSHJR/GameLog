@@ -5,18 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_game_detail_screen"
-    android:padding="20dp"
     tools:context=".GameDetailActivity">
 
     <ImageButton
         android:id="@+id/detail_back_button"
         android:layout_width="42dp"
         android:layout_height="42dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
         android:background="@drawable/bg_icon_circle_grey"
         android:contentDescription="Back"
         android:padding="10dp"
         android:src="@drawable/ic_arrow_back"
         android:tint="@color/text_high_emp"
+        android:elevation="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -25,8 +27,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
-        android:text="Game Details"
         style="@style/AppText.ScreenTitle"
+        android:text="Game detail"
+        android:elevation="16dp"
         app:layout_constraintBottom_toBottomOf="@id/detail_back_button"
         app:layout_constraintStart_toEndOf="@id/detail_back_button"
         app:layout_constraintTop_toTopOf="@id/detail_back_button" />
@@ -47,7 +50,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="Loading game details..."
+        android:text="Loading game detail..."
         android:textColor="@color/text_med_emp"
         android:textSize="14sp"
         android:visibility="gone"
@@ -91,125 +94,158 @@
         android:id="@+id/detail_content_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="14dp"
         android:clipToPadding="false"
-        android:paddingBottom="20dp"
+        android:paddingBottom="24dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/detail_back_button">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <com.google.android.material.card.MaterialCardView
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/surface_card_soft"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/accent_neon_soft"
-                app:strokeWidth="1dp">
+                android:layout_height="420dp"
+                android:background="@drawable/bg_game_hero_placeholder">
+
+                <ImageView
+                    android:id="@+id/detail_hero_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="Game hero"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_games" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_hero_bottom_fade" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:background="@color/accent_neon_soft" />
+
+                <ImageView
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_gravity="top|end"
+                    android:layout_marginTop="18dp"
+                    android:layout_marginEnd="18dp"
+                    android:background="@drawable/bg_icon_circle_grey"
+                    android:contentDescription="Game cover placeholder"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_games"
+                    android:tint="@color/text_high_emp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:paddingStart="20dp"
+                    android:paddingTop="14dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="22dp">
 
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="190dp"
-                        android:background="@drawable/bg_game_hero_placeholder"
-                        android:foregroundGravity="center">
-
-                        <ImageView
-                            android:id="@+id/detail_hero_image"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:alpha="0.9"
-                            android:contentDescription="Game hero"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/ic_games"
-                            android:tint="@color/accent_cyan" />
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@drawable/bg_hero_bottom_fade" />
-
-                        <ImageView
-                            android:layout_width="42dp"
-                            android:layout_height="42dp"
-                            android:layout_gravity="top|end"
-                            android:layout_margin="12dp"
-                            android:contentDescription="Game cover placeholder"
-                            android:src="@drawable/ic_games"
-                            android:tint="@color/text_high_emp" />
-
-                        <TextView
-                            android:id="@+id/detail_hero_caption"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="bottom"
-                            android:layout_marginStart="14dp"
-                            android:layout_marginEnd="14dp"
-                            android:layout_marginBottom="12dp"
-                            android:text="Game landing view"
-                            android:textColor="@color/text_high_emp"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-                    </FrameLayout>
+                    <TextView
+                        android:id="@+id/detail_hero_caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Live game preview"
+                        android:textColor="@color/accent_pink"
+                        android:textSize="12sp"
+                        android:letterSpacing="0.08"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/detail_title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginTop="6dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
                         android:textColor="@color/text_high_emp"
-                        android:textSize="28sp"
+                        android:textSize="38sp"
+                        android:lineSpacingExtra="2dp"
                         android:textStyle="bold"
                         tools:text="Cyberpunk 2077" />
 
                     <TextView
                         android:id="@+id/detail_genres"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="10dp"
                         android:background="@drawable/bg_detail_genres"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:paddingStart="12dp"
                         android:paddingTop="8dp"
                         android:paddingEnd="12dp"
                         android:paddingBottom="8dp"
                         android:textColor="@color/accent_cyan"
                         android:textSize="12sp"
+                        android:letterSpacing="0.03"
                         android:textStyle="bold"
                         tools:text="Action RPG  |  Open World" />
+                </LinearLayout>
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingTop="18dp"
+                android:paddingEnd="20dp">
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/AppCard.Glass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Overview"
+                        android:textColor="@color/text_high_emp"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/detail_description"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
+                        android:layout_marginTop="10dp"
                         android:lineSpacingExtra="3dp"
                         android:textColor="@color/text_soft"
-                        android:textSize="14sp"
+                        android:textSize="15sp"
                         tools:text="A story-driven open-world RPG set in Night City." />
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
+                style="@style/AppCard.PinkHighlight"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/card_stroke"
-                app:strokeWidth="1dp">
+                app:cardCornerRadius="18dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -244,34 +280,24 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/detail_favourite_button"
-                        style="@style/Widget.MaterialComponents.Button"
+                        style="@style/AppButton.PinkSolid"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:padding="14dp"
                         android:text="Favourite"
                         android:textAllCaps="false"
-                        android:textStyle="bold"
-                        app:cornerRadius="12dp"
                         app:icon="@drawable/ic_favourite"
                         app:iconGravity="textStart"
-                        app:iconPadding="10dp"
-                        app:strokeColor="@color/accent_neon_soft"
-                        app:strokeWidth="1dp" />
+                        app:iconPadding="10dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
+                style="@style/AppCard.Glass"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/card_stroke"
-                app:strokeWidth="1dp">
+                app:cardCornerRadius="18dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -363,15 +389,12 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/detail_collection_notes_card"
+                style="@style/AppCard.Glass"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:visibility="gone"
-                app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/card_stroke"
-                app:strokeWidth="1dp">
+                app:cardCornerRadius="18dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -445,6 +468,8 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

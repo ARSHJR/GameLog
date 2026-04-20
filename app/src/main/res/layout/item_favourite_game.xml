@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/AppCard"
+    style="@style/AppCard.PinkHighlight"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
@@ -23,7 +23,7 @@
             android:contentDescription="Favourite game"
             android:padding="12dp"
             android:src="@drawable/ic_favourite"
-            android:tint="@color/accent_cyan" />
+            android:tint="@color/accent_pink" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -61,7 +61,7 @@
                 android:paddingTop="4dp"
                 android:paddingEnd="10dp"
                 android:paddingBottom="4dp"
-                android:textColor="@color/accent_cyan"
+                android:textColor="@color/accent_pink"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 

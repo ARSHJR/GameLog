@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_explore_screen"
+    android:paddingBottom="16dp"
     tools:context=".DashboardActivity">
 
     <!-- Hero/Header Section -->
@@ -18,8 +19,8 @@
         android:id="@+id/explore_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="HOME HUB"
         style="@style/AppText.SectionLabel"
+        android:text="HOME HUB"
         android:layout_marginStart="24dp"
         android:layout_marginTop="28dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,7 +33,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="6dp"
         android:layout_marginEnd="24dp"
-        android:text="Your collection, favourites, discover feed, and profile in one place"
+        android:text="Everything you need to run your personal game journal"
         style="@style/AppText.ScreenSubtitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -41,7 +42,7 @@
     <!-- Redesigned Cards with Gaming Aesthetic -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/games_card"
-        style="@style/AppCard"
+        style="@style/AppCard.Hero"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -84,7 +85,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="View your owned and planned games"
+                    android:text="Review owned and planned titles"
                     android:textColor="@color/text_med_emp"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -121,7 +122,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/ic_explore"
-                app:tint="@color/accent_cyan"
+                    app:tint="@color/accent_neon"
                 android:background="@drawable/bg_icon_circle_cyan"
                 android:padding="10dp"/>
 
@@ -143,7 +144,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Explore games from the web"
+                    android:text="Discover new catalogue picks"
                     android:textColor="@color/text_med_emp"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -180,7 +181,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/ic_favourite"
-                app:tint="@color/accent_cyan"
+                    app:tint="@color/accent_pink"
                 android:background="@drawable/bg_icon_circle_cyan"
                 android:padding="10dp"/>
 
@@ -320,7 +321,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="App preferences and logout tools"
+                    android:text="Preferences, permissions, and help"
                     android:textColor="@color/text_med_emp"
                     android:textSize="14sp" />
             </LinearLayout>

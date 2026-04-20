@@ -10,14 +10,10 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/explore_header_card"
+        style="@style/AppCard.Glass"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        app:cardBackgroundColor="@color/surface_card_soft"
-        app:cardCornerRadius="22dp"
-        app:cardElevation="0dp"
-        app:strokeColor="@color/accent_neon_soft"
-        app:strokeWidth="1dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -32,17 +28,14 @@
                 android:id="@+id/explore_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="EXPLORE"
-                android:textColor="@color/accent_neon"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.2" />
+                style="@style/AppText.SectionLabel"
+                android:text="EXPLORE" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Discover your next game"
+                android:text="Discover your next obsession"
                 android:textColor="@color/text_high_emp"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -52,8 +45,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Live picks from your backend library"
+                android:text="Live picks from your catalogue feed"
                 style="@style/AppText.ScreenSubtitle" />
+
+            <View
+                android:layout_width="64dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="12dp"
+                android:background="@color/accent_pink_soft" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -73,7 +72,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="Syncing library..."
+        android:text="Syncing discovery feed..."
         android:textColor="@color/text_med_emp"
         android:textSize="14sp"
         android:visibility="gone"

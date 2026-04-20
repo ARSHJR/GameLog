@@ -36,7 +36,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Your account snapshot and recent activity"
+        android:text="Account stats, progress, and recent activity"
         style="@style/AppText.ScreenSubtitle"
         app:layout_constraintStart_toStartOf="@id/profile_header_title"
         app:layout_constraintTop_toBottomOf="@id/profile_header_title" />
@@ -116,7 +116,7 @@
             android:orientation="vertical">
 
             <com.google.android.material.card.MaterialCardView
-                style="@style/AppCard"
+                style="@style/AppCard.Glass"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:strokeColor="@color/card_stroke"
@@ -181,8 +181,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
+                android:background="@null"
                 android:text="Stats"
-                android:textColor="@color/accent_neon"
+                android:textColor="@color/accent_pink"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -193,7 +194,7 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/AppCard"
+                    style="@style/AppCard.Hero"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -220,6 +221,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
+                            android:background="@null"
                             android:text="Total Games"
                             android:textColor="@color/text_med_emp"
                             android:textSize="12sp" />
@@ -227,7 +229,7 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/AppCard"
+                    style="@style/AppCard.PinkHighlight"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -254,6 +256,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
+                            android:background="@null"
                             android:text="Favourites"
                             android:textColor="@color/text_med_emp"
                             android:textSize="12sp" />
@@ -268,7 +271,7 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/AppCard"
+                    style="@style/AppCard.Glass"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -295,6 +298,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
+                            android:background="@null"
                             android:text="Notes"
                             android:textColor="@color/text_med_emp"
                             android:textSize="12sp" />
@@ -302,7 +306,7 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/AppCard"
+                    style="@style/AppCard.Hero"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -329,6 +333,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
+                            android:background="@null"
                             android:text="Reminders"
                             android:textColor="@color/text_med_emp"
                             android:textSize="12sp" />
@@ -337,11 +342,11 @@
             </LinearLayout>
 
             <com.google.android.material.card.MaterialCardView
-                style="@style/AppCard"
+                style="@style/AppCard.PinkHighlight"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:strokeColor="@color/card_stroke"
+                app:strokeColor="@color/card_stroke_pink"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -363,6 +368,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
+                        android:background="@null"
                         android:text="Completed Tasks"
                         android:textColor="@color/text_med_emp"
                         android:textSize="12sp" />
@@ -370,7 +376,7 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
-                style="@style/AppCard"
+                style="@style/AppCard.Glass"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -386,6 +392,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="@null"
                         android:text="Activity Summary"
                         android:textColor="@color/accent_cyan"
                         android:textSize="13sp"
@@ -416,7 +423,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
-                android:text="Recent Activity"
+                android:background="@null"
+                android:text="Recent activity"
                 android:textColor="@color/accent_neon"
                 android:textSize="14sp"
                 android:textStyle="bold" />

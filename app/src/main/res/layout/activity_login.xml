@@ -36,7 +36,7 @@
         android:id="@+id/welcome_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome!"
+        android:text="Welcome back"
         android:textColor="@color/text_high_emp"
         android:textSize="36sp"
         android:textStyle="bold"
@@ -48,7 +48,7 @@
         android:id="@+id/credentials_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sign in to track your library"
+        android:text="Sign in to continue your gaming journal"
         android:textColor="@color/text_med_emp"
         android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/welcome_title"
@@ -71,7 +71,7 @@
             android:id="@+id/email_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Email Address"
+            android:hint="Email address"
             android:inputType="textEmailAddress"
             android:textColor="@color/text_high_emp"
             android:fontFamily="sans-serif-medium"/>
@@ -105,7 +105,7 @@
         android:id="@+id/forgot_password"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Forgot Password?"
+        android:text="Forgot password?"
         android:textColor="@color/accent_neon"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/password_layout"
@@ -126,14 +126,12 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGoogleSignIn"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        style="@style/AppButton.Secondary"
         android:layout_width="0dp"
         android:layout_height="64dp"
         android:text="Continue with Google"
         android:textAllCaps="false"
         android:textColor="@color/text_high_emp"
-        app:strokeColor="@color/text_disabled"
-        app:cornerRadius="12dp"
         app:icon="@drawable/ic_google"
         app:iconGravity="textStart"
         app:iconTint="@android:color/transparent"
@@ -142,6 +140,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
-        android:fontFamily="sans-serif-black"/>
+        android:fontFamily="sans-serif-medium"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

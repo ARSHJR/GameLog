@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/AppCard"
+    style="@style/AppCard.Glass"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
@@ -20,7 +20,7 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:src="@drawable/ic_explore"
-            app:tint="@color/accent_cyan"
+            app:tint="@color/accent_neon"
             android:background="@drawable/bg_icon_circle_cyan"
             android:padding="12dp"
             android:contentDescription="Game icon" />
@@ -58,7 +58,7 @@
                 android:layout_marginTop="8dp"
                 android:maxLines="1"
                 android:ellipsize="end"
-                android:textColor="@color/accent_cyan"
+                android:textColor="@color/accent_pink"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 

@@ -4,19 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_primary"
+    android:background="@drawable/bg_explore_screen"
     tools:context=".GamesActivity"
-    android:padding="16dp">
+    android:padding="20dp">
 
     <TextView
         android:id="@+id/games_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Your Library"
+        android:layout_marginTop="2dp"
+        android:text="Your library"
         android:textColor="@color/text_high_emp"
-        android:textSize="28sp"
+        android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="0 Titles Tracked"
+        android:text="0 titles tracked"
         android:textColor="@color/accent_neon"
         android:textStyle="bold"
         android:textSize="14sp"
@@ -56,7 +56,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Empty Library"
+            android:text="Your library is empty"
             android:textColor="@color/text_med_emp"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -65,7 +65,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Start adding games below"
+            android:text="Use the add button to log your first title"
             android:textColor="@color/text_disabled"
             android:textSize="14sp" />
     </LinearLayout>

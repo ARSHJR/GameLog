@@ -14,11 +14,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ADD TO COLLECTION"
-            android:textColor="@color/accent_neon"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.15" />
+            style="@style/AppText.SectionLabel"
+            android:text="Create entry" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/dialog_game_title_layout"
@@ -61,12 +58,11 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/dialog_get_location_button"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/AppButton.Secondary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Get Location"
-                android:textSize="11sp"
-                app:strokeColor="@color/accent_neon" />
+                android:textSize="11sp" />
 
             <TextView
                 android:id="@+id/dialog_location_text"
@@ -80,12 +76,11 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/dialog_choose_image_button"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/AppButton.Secondary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Pick Cover Image"
-            app:strokeColor="@color/accent_cyan" />
+                android:text="Pick Cover Image" />
 
         <ImageView
             android:id="@+id/dialog_image_preview"
@@ -99,7 +94,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="MODE"
+            android:text="Mode"
             android:textColor="@color/text_disabled"
             android:textSize="11sp"
             android:textStyle="bold"
@@ -146,7 +141,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="REMINDER FREQUENCY"
+                android:text="Reminder frequency"
                 android:textColor="@color/text_disabled"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -223,7 +218,7 @@
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="CANCEL"
+                android:text="Cancel"
                 android:textColor="@color/text_med_emp" />
 
             <com.google.android.material.button.MaterialButton
@@ -232,7 +227,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
-                android:text="SAVE"
+                android:text="Save"
                 android:padding="12dp" />
         </LinearLayout>
 

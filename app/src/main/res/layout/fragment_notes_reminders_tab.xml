@@ -8,23 +8,23 @@
 
     <TextView
         android:id="@+id/global_notes_title"
+        style="@style/AppText.ScreenTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Notes &amp; Reminders"
-        android:textColor="@color/text_high_emp"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:textSize="28sp"
+        android:background="@null"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/global_notes_subtitle"
+        style="@style/AppText.ScreenSubtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:text="Global view across your collection entries."
-        android:textColor="@color/text_med_emp"
-        android:textSize="13sp"
+        android:text="All notes and reminder tasks across your collection."
+        android:background="@null"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/global_notes_title" />
@@ -34,6 +34,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
+        android:background="@drawable/bg_toggle_group_track"
+        android:padding="4dp"
         app:selectionRequired="true"
         app:singleSelection="true"
         app:layout_constraintEnd_toEndOf="parent"
@@ -42,27 +44,21 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/global_notes_tab_notes"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/AppButton.ToggleSegment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Notes"
-            android:textAllCaps="false"
-            app:cornerRadius="12dp"
-            app:strokeColor="@color/accent_neon_soft"
-            app:strokeWidth="1dp" />
+            android:textAllCaps="false" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/global_notes_tab_reminders"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/AppButton.ToggleSegment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Reminders"
-            android:textAllCaps="false"
-            app:cornerRadius="12dp"
-            app:strokeColor="@color/accent_neon_soft"
-            app:strokeWidth="1dp" />
+            android:textAllCaps="false" />
 
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
@@ -82,7 +78,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="Loading items..."
+        android:text="Loading your entries..."
         android:textColor="@color/text_med_emp"
         android:textSize="13sp"
         android:visibility="gone"
@@ -127,7 +123,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:padding="20dp"
-        android:text="No entries yet"
+        android:text="Nothing here yet. Create a note or reminder to get started."
         android:textColor="@color/text_med_emp"
         android:textSize="13sp"
         android:visibility="gone"
@@ -166,7 +162,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="Pending"
+                android:background="@null"
+                android:text="Pending reminders"
                 android:textColor="@color/accent_neon"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -185,7 +182,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:layout_marginBottom="8dp"
-                android:text="Completed"
+                android:background="@null"
+                android:text="Completed reminders"
                 android:textColor="@color/accent_cyan"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -209,7 +207,7 @@
         android:layout_margin="16dp"
         android:contentDescription="Add note or reminder"
         android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/accent_neon"
+        app:backgroundTint="@color/accent_pink"
         app:tint="@color/text_high_emp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

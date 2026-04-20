@@ -81,7 +81,7 @@
                     android:paddingEnd="10dp"
                     android:paddingBottom="4dp"
                     android:text="FAVOURITE"
-                    android:textColor="@color/accent_cyan"
+                    android:textColor="@color/accent_pink"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 

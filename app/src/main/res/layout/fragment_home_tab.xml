@@ -12,38 +12,49 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="HOME"
-            android:textColor="@color/accent_neon"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.2" />
-
-        <TextView
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Your gaming hub"
-            android:textColor="@color/text_high_emp"
-            android:textSize="26sp"
-            android:textStyle="bold" />
+            android:layout_height="180dp"
+            android:background="@drawable/bg_surface_glass">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="Quickly jump into collection, favourites, and discovery."
-            android:textColor="@color/text_med_emp"
-            android:textSize="13sp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AppText.SectionLabel"
+                    android:text="HOME" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Your command hub"
+                    android:textColor="@color/text_high_emp"
+                    android:textSize="30sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Jump into your library, favourites, and discovery in seconds."
+                    android:textColor="@color/text_med_emp"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </FrameLayout>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/home_collection_card"
-            style="@style/AppCard"
+            style="@style/AppCard.Hero"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="18dp"
             app:strokeColor="@color/card_stroke"
             app:strokeWidth="1dp">
 
@@ -98,11 +109,11 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/home_favourites_card"
-            style="@style/AppCard"
+            style="@style/AppCard.PinkHighlight"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:strokeColor="@color/card_stroke"
+            app:strokeColor="@color/card_stroke_pink"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -118,7 +129,7 @@
                     android:background="@drawable/bg_icon_circle_cyan"
                     android:padding="10dp"
                     android:src="@drawable/ic_favourite"
-                    android:tint="@color/accent_cyan" />
+                    android:tint="@color/accent_pink" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -156,7 +167,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/home_explore_card"
-            style="@style/AppCard"
+            style="@style/AppCard.Glass"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
@@ -197,7 +208,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Discover and add games"
+                        android:text="Discover and add your next session"
                         android:textColor="@color/text_med_emp"
                         android:textSize="13sp" />
                 </LinearLayout>

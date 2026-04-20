@@ -440,12 +440,12 @@ public class GameDetailActivity extends AppCompatActivity {
     private void updateFavouriteVisualState() {
         favouriteButton.setText(isFavouriteSelected ? "Favourited" : "Favourite");
         int activeText = ContextCompat.getColor(this, R.color.text_high_emp);
-        int inactiveText = ContextCompat.getColor(this, R.color.accent_cyan);
+        int inactiveText = ContextCompat.getColor(this, R.color.accent_pink);
 
         favouriteButton.setTextColor(isFavouriteSelected ? activeText : inactiveText);
-        favouriteButton.setIconTint(ContextCompat.getColorStateList(this, isFavouriteSelected ? R.color.text_high_emp : R.color.accent_cyan));
-        favouriteButton.setBackgroundTintList(ContextCompat.getColorStateList(this, isFavouriteSelected ? R.color.accent_neon : R.color.surface_card_soft));
-        favouriteButton.setStrokeColor(ContextCompat.getColorStateList(this, isFavouriteSelected ? R.color.accent_neon : R.color.accent_neon_soft));
+        favouriteButton.setIconTint(ContextCompat.getColorStateList(this, isFavouriteSelected ? R.color.text_high_emp : R.color.accent_pink));
+        favouriteButton.setBackgroundTintList(ContextCompat.getColorStateList(this, isFavouriteSelected ? R.color.accent_pink : R.color.surface_card_soft));
+        favouriteButton.setStrokeColor(ContextCompat.getColorStateList(this, isFavouriteSelected ? R.color.card_stroke_pink : R.color.accent_pink_soft));
     }
 
     private void setActionStatus(String text, int colorRes) {
