@@ -38,6 +38,10 @@ public class GameApiAdapter extends RecyclerView.Adapter<GameApiAdapter.GameView
         notifyDataSetChanged();
     }
 
+    public List<GameApiItem> getGames() {
+        return new ArrayList<>(gamesList);
+    }
+
     @NonNull
     @Override
     public GameViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
