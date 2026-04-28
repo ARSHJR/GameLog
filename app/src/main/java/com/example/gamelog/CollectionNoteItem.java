@@ -85,6 +85,10 @@ public class CollectionNoteItem {
     @Nullable
     private String snoozedUntil;
 
+    @SerializedName("timezone_id")
+    @Nullable
+    private String timezoneId;
+
     @Nullable
     public String getNoteId() {
         return noteId;
@@ -188,5 +192,10 @@ public class CollectionNoteItem {
     @Nullable
     public String getSnoozedUntil() {
         return snoozedUntil;
+    }
+
+    @Nullable
+    public String getTimezoneId() {
+        return timezoneId;
     }
 }

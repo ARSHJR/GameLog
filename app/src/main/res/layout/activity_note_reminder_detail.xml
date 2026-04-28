@@ -194,6 +194,15 @@
                         tools:text="Location: 12.34, 56.78" />
 
                     <TextView
+                        android:id="@+id/note_detail_timezone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:textColor="@color/text_med_emp"
+                        android:textSize="12sp"
+                        tools:text="Timezone: Asia/Kolkata" />
+
+                    <TextView
                         android:id="@+id/note_detail_created_at"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

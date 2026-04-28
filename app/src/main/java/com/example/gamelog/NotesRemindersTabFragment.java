@@ -721,6 +721,9 @@ public class NotesRemindersTabFragment extends Fragment {
         String frequency = TYPE_REMINDER.equals(createType) && frequencyOption != null
             ? frequencyOption.getBackendValue()
             : null;
+        String timezoneId = TYPE_REMINDER.equals(createType)
+            ? java.util.TimeZone.getDefault().getID()
+            : null;
 
         CreateCollectionNoteRequest request = new CreateCollectionNoteRequest(
                 createType,
@@ -730,7 +733,8 @@ public class NotesRemindersTabFragment extends Fragment {
                 latitude,
                 longitude,
             taskStatus,
-            frequency
+            frequency,
+            timezoneId
         );
 
         ApiService apiService = RetrofitClient.getApiService();
@@ -959,6 +963,7 @@ public class NotesRemindersTabFragment extends Fragment {
                 .putString(ReminderWorker.INPUT_GAME_TITLE, toNullableText(gameTitle))
                 .putString(ReminderWorker.INPUT_REMINDER_TITLE, toNullableText(reminderTitle))
                 .putString(ReminderWorker.INPUT_REMINDER_BODY, toNullableText(reminderBody))
+                .putString(ReminderWorker.INPUT_TIMEZONE_ID, createdItem.getTimezoneId())
                 .build();
 
         PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(
@@ -1017,6 +1022,7 @@ public class NotesRemindersTabFragment extends Fragment {
         intent.putExtra(NoteReminderDetailActivity.EXTRA_CREATED_AT, item.getCreatedAt());
         intent.putExtra(NoteReminderDetailActivity.EXTRA_LATITUDE, item.getLatitude() == null ? null : String.valueOf(item.getLatitude()));
         intent.putExtra(NoteReminderDetailActivity.EXTRA_LONGITUDE, item.getLongitude() == null ? null : String.valueOf(item.getLongitude()));
+        intent.putExtra(NoteReminderDetailActivity.EXTRA_TIMEZONE_ID, item.getTimezoneId());
         startActivity(intent);
     }
 

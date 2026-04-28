@@ -22,6 +22,7 @@ public class NoteReminderDetailActivity extends AppCompatActivity {
     public static final String EXTRA_CREATED_AT = "extra_created_at";
     public static final String EXTRA_LATITUDE = "extra_latitude";
     public static final String EXTRA_LONGITUDE = "extra_longitude";
+    public static final String EXTRA_TIMEZONE_ID = "extra_timezone_id";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,6 +44,7 @@ public class NoteReminderDetailActivity extends AppCompatActivity {
         TextView scheduleText = findViewById(R.id.note_detail_schedule);
         TextView statusText = findViewById(R.id.note_detail_status);
         TextView locationText = findViewById(R.id.note_detail_location);
+        TextView timezoneText = findViewById(R.id.note_detail_timezone);
         TextView createdAtText = findViewById(R.id.note_detail_created_at);
 
         String type = normalize(getIntent().getStringExtra(EXTRA_TYPE));
@@ -56,6 +58,7 @@ public class NoteReminderDetailActivity extends AppCompatActivity {
         String createdAt = normalize(getIntent().getStringExtra(EXTRA_CREATED_AT));
         String latitude = normalize(getIntent().getStringExtra(EXTRA_LATITUDE));
         String longitude = normalize(getIntent().getStringExtra(EXTRA_LONGITUDE));
+        String timezoneId = normalize(getIntent().getStringExtra(EXTRA_TIMEZONE_ID));
 
         boolean isReminder = "reminder".equalsIgnoreCase(type);
         headerTitle.setText(isReminder ? "Reminder Detail" : "Note Detail");
@@ -99,6 +102,13 @@ public class NoteReminderDetailActivity extends AppCompatActivity {
             locationText.setText("Location: " + latitude + ", " + longitude);
         } else {
             locationText.setVisibility(View.GONE);
+        }
+
+        if (isReminder && !TextUtils.isEmpty(timezoneId)) {
+            timezoneText.setVisibility(View.VISIBLE);
+            timezoneText.setText("Timezone: " + timezoneId);
+        } else {
+            timezoneText.setVisibility(View.GONE);
         }
 
         if (!TextUtils.isEmpty(createdAt)) {

@@ -325,7 +325,8 @@ app.post('/collection/:userGameId/notes', async (req, res) => {
     next_trigger_at,
     is_active,
     last_triggered_at,
-    snoozed_until
+    snoozed_until,
+    timezone_id = null
   } = req.body;
 
   if (!['note', 'reminder'].includes(note_type)) {
@@ -440,6 +441,10 @@ app.post('/collection/:userGameId/notes', async (req, res) => {
         Date.now() + (frequencyMinutes[normalizedFrequency] || 60) * 60 * 1000
       ).toISOString();
 
+      const safeTimezoneId = (typeof timezone_id === 'string' && timezone_id.trim().length > 0)
+        ? timezone_id.trim()
+        : null;
+
       const reminderQuery = `
         INSERT INTO public.game_reminders (
           note_id,
@@ -447,9 +452,10 @@ app.post('/collection/:userGameId/notes', async (req, res) => {
           is_active,
           next_trigger_at,
           last_triggered_at,
-          snoozed_until
+          snoozed_until,
+          timezone_id
         )
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *;
       `;
 
@@ -459,7 +465,8 @@ app.post('/collection/:userGameId/notes', async (req, res) => {
         reminderPayload.is_active !== undefined ? Boolean(reminderPayload.is_active) : true,
         nextTriggerAt,
         reminderPayload.last_triggered_at || null,
-        reminderPayload.snoozed_until || null
+        reminderPayload.snoozed_until || null,
+        safeTimezoneId
       ];
 
       const reminderResult = await client.query(reminderQuery, reminderParams);
@@ -501,7 +508,8 @@ app.get('/collection/:userGameId/notes', async (req, res) => {
           gr.is_active,
           gr.next_trigger_at,
           gr.last_triggered_at,
-          gr.snoozed_until
+          gr.snoozed_until,
+          gr.timezone_id
         FROM public.game_notes gn
         LEFT JOIN public.game_reminders gr ON gr.note_id = gn.note_id
         WHERE gn.user_game_id = $1
@@ -529,7 +537,8 @@ app.get('/collection/:userGameId/notes', async (req, res) => {
           gr.is_active,
           gr.next_trigger_at,
           gr.last_triggered_at,
-          gr.snoozed_until
+          gr.snoozed_until,
+          gr.timezone_id
         FROM public.game_notes gn
         LEFT JOIN public.game_reminders gr ON gr.note_id = gn.note_id
         WHERE gn.user_game_id = $1
@@ -569,7 +578,8 @@ app.get('/users/:userId/notes', async (req, res) => {
         gr.is_active,
         gr.next_trigger_at,
         gr.last_triggered_at,
-        gr.snoozed_until
+        gr.snoozed_until,
+        gr.timezone_id
       FROM public.game_notes gn
       JOIN public.user_games ug ON ug.user_game_id = gn.user_game_id
       LEFT JOIN public.games g ON g.game_id = ug.game_id

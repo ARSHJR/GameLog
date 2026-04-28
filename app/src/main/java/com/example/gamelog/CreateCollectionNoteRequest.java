@@ -36,16 +36,27 @@ public class CreateCollectionNoteRequest {
     @Nullable
     private final String frequency;
 
+    @SerializedName("timezone_id")
+    @Nullable
+    private final String timezoneId;
+
     public CreateCollectionNoteRequest(String noteType, @Nullable String title, @Nullable String noteText,
                                        @Nullable String mediaUri, @Nullable Double latitude,
                                        @Nullable Double longitude, @Nullable String taskStatus) {
-        this(noteType, title, noteText, mediaUri, latitude, longitude, taskStatus, null);
+        this(noteType, title, noteText, mediaUri, latitude, longitude, taskStatus, null, null);
     }
 
     public CreateCollectionNoteRequest(String noteType, @Nullable String title, @Nullable String noteText,
                                        @Nullable String mediaUri, @Nullable Double latitude,
                                        @Nullable Double longitude, @Nullable String taskStatus,
                                        @Nullable String frequency) {
+        this(noteType, title, noteText, mediaUri, latitude, longitude, taskStatus, frequency, null);
+    }
+
+    public CreateCollectionNoteRequest(String noteType, @Nullable String title, @Nullable String noteText,
+                                       @Nullable String mediaUri, @Nullable Double latitude,
+                                       @Nullable Double longitude, @Nullable String taskStatus,
+                                       @Nullable String frequency, @Nullable String timezoneId) {
         this.noteType = noteType;
         this.title = title;
         this.noteText = noteText;
@@ -54,6 +65,7 @@ public class CreateCollectionNoteRequest {
         this.longitude = longitude;
         this.taskStatus = taskStatus;
         this.frequency = frequency;
+        this.timezoneId = timezoneId;
     }
 
     public String getNoteType() {
@@ -93,5 +105,10 @@ public class CreateCollectionNoteRequest {
     @Nullable
     public String getFrequency() {
         return frequency;
+    }
+
+    @Nullable
+    public String getTimezoneId() {
+        return timezoneId;
     }
 }
